@@ -15,14 +15,16 @@
                     <img src="{{ url_for('static', filename='images/logo.png')}}" alt="logo">
                 </a>
             </div>
+            <div id="greeting">
+                {% if name %}
+                    <p>Hello, {{name}}</p>
+                {% endif %}
+            </div>
         </div>
         <div class="right">
             <ul class="links">
-                <li><a href="google.com">link-one</a></li>
-                <li><a href="google.com">link-two</a></li>
-                <li><a href="google.com">link-three</a></li>
+                {% block navlinks %}{% endblock %}
             </ul>
-
         </div>
     </div>
 
