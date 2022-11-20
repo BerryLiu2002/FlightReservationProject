@@ -1,0 +1,41 @@
+body{
+    background-color: #F7F7FF;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    /* this removes the line under our links */
+    text-decoration: none;
+    color: rebeccapurple;
+}
+
+.navbar{
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 50px 10px 50px;
+    font-size: 30px;
+    background-color: #CECEDD;
+}
+
+.navbar ul {
+    list-style-type: none;
+    display: flex;
+    margin: 20px;
+    padding-right: 25px;
+    gap: 30px;
+}
+
+.left, .right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+#navlogo img {
+    width: 100px;
+}

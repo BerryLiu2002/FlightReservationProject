@@ -19,7 +19,7 @@ conn = pymysql.connect(host='localhost',
 
 #Define a route to hello function
 @app.route('/')
-def hello():
+def home():
 	return render_template('index.html')
 
 
