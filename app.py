@@ -1,31 +1,13 @@
-#Import Flask Library
 from flask import Flask, render_template, request, session, url_for, redirect
-import pymysql.cursors
+from sql_helper import *
 
 #Initialize the app from Flask
 app = Flask(__name__)
 
-#Configure MySQL
-conn = pymysql.connect(host='localhost',
-                       port=3306,          
-                       user='root',
-                       password='',
-                       db='FlightReservation',
-                       charset='utf8',
-                       cursorclass=pymysql.cursors.DictCursor)
-
-cursor = conn.cursor()
-
 #Define a route to hello function
 @app.route('/')
 def home():
-    if not session.get('username'):
-        return render_template('index.html', username=None, name=None)
-    else:
-        # check if user is customer or admin
-        # render appropriate page
-
-        return render_template('index.html', username=session.get('username'), name=session.get('name'))
+    return render_template('index.html', username=session.get('username'), name=session.get('name'), usertype = session.get('usertype'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -37,32 +19,43 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        # check if user is a customer
-        query = 'SELECT name FROM customers WHERE email = %s and password = %s'
-        cursor.execute(query, (username, password))
-        data = cursor.fetchone()
-        error = None
-        if(data): # if user is a customer
+        f_name, user_type = auth_user(username, password)
+        if f_name or user_type:
             session['username'] = username
-            session['name'] = data['name'].split()[0]
+            session['name'] = f_name
+            session['user_type'] = user_type
             return redirect(url_for('home'))
         else:
-            # check if user is an airline staff
-            query = 'SELECT first_name FROM airlinestaff WHERE username = %s and password = %s'
-            cursor.execute(query, (username, password))
-            data = cursor.fetchone()
-            if (data):
-                session['username'] = username
-                session['name'] = data['first_name']
-                return redirect(url_for('home'))
-            else: # user is not a customer or airline staff
-                error = 'Invalid username or password. Please try again!'
-                return render_template('login.html', error=error)
+            return render_template('login.html', error='Invalid credentials, please try again!')
 
 @app.route('/logout')
 def logout():
-    session.pop('username')
+    session.pop('username', None)
+    session.pop('name', None)
+    session.pop('user_type', None)
     return redirect('/')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        if request.args.get('reg_type') == 'customer':
+            return render_template('register_customer.html')
+        else: # request.args.get('reg_type') == 'airlinestaff'
+            return render_template('register_airline_staff.html')
+    if request.method == 'POST':
+        if request.form.get('reg_type') == 'customer':
+            status = check_register_customer(request.form)
+            if status:
+                return render_template('register_customer.html', success='You have successfully registered!')
+            else:
+                return render_template('register_customer.html', error='There was an error in registering, please try again!')
+        else: # request.form.get('reg_type') == 'airlinestaff'
+            status = check_register_airlinestaff(request.form)
+            if status:
+                return render_template('register_airline_staff.html', success='You have successfully registered!')
+            else:
+                return render_template('register_airline_staff.html', error='There was an error in registering, please try again!')
+        
 
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000

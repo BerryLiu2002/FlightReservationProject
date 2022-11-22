@@ -20,14 +20,12 @@
                     <label for="password">Password</label>
                     <input type="password" name="password" id="password" placeholder="Enter your password">
                 </div>
-                <button>
-                    Login
-                </button>
+                <input type="submit" value="Login">
                 {% if error %}
 		            <p class="error"><strong>Error:</strong> {{error}}</p>
 	            {% endif %}
             </form>
         </div>
     </div>
-
+    <p>Or, register as a <a href="{{ url_for('register', reg_type='customer') }}">customer</a> or an <a href="{{ url_for('register', reg_type='airlinestaff') }}">airline staff</a></p>
 {% endblock %}
