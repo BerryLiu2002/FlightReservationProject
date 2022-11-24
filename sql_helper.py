@@ -87,3 +87,12 @@ def check_register_airlinestaff(data):
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False
+
+def staff_default_view_flights():
+    pass
+
+def staff_filtered_view_flights(date_range, sorc, dest):
+    pass
+
+
+
