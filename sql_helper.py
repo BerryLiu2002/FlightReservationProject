@@ -89,6 +89,7 @@ def check_register_airlinestaff(data):
         print('Error: ', e)
         return False
 
+<<<<<<< HEAD
 def get_flights(email):
     query = "SELECT flight_num, sold_price FROM TICKETS WHERE customer_email = %s"
     cursor.execute(query, email)
@@ -97,3 +98,52 @@ def get_flights(email):
         return data
     return None
 
+=======
+def staff_default_view_flights():
+    pass
+
+def staff_filtered_view_flights(date_range, sorc, dest):
+    pass
+
+def get_airports():
+    query = 'SELECT DISTINCT name FROM airports'
+    cursor.execute(query)
+    data = cursor.fetchall()
+    return data
+
+def get_airport_cities():
+    query = 'SELECT DISTINCT city FROM airports'
+    cursor.execute(query)
+    data = cursor.fetchall()
+    print(data)
+    return data
+
+def get_filtered_flights(args):
+    inputs = ()
+    sql = "SELECT * FROM flights"
+    condition_list = []
+    if args.get('departure'):
+        condition_list.append("departure_airport = %s")
+        inputs += (args.get('departure'),)
+    if args.get('arrival'):
+        condition_list.append("arrival_airport = %s")
+        inputs += (args.get('arrival'),)
+    if args.get('departure_city'):
+        condition_list.append("departure_airport IN (SELECT name FROM airports WHERE city = %s)")
+        inputs += (args.get('departure_city'),)
+    if args.get('arrival_city'):
+        condition_list.append("arrival_airport IN (SELECT name FROM airports WHERE city = %s)")
+        inputs += (args.get('arrival_city'),)
+    if args.get('departure_date'):
+        condition_list.append("departure_time = %s")
+        inputs += (args.get('departure_date'),)
+    if condition_list:
+        sql += " WHERE " + " AND ".join(condition_list)
+    cursor.execute(sql, inputs)
+    data = cursor.fetchall()
+    for each in data:
+        each['departure_time'] = each['departure_time'].strftime("%Y-%m-%d")
+        each['arrival_time'] = each['arrival_time'].strftime("%Y-%m-%d")
+    print(data)
+    return data
+>>>>>>> upstream/main

@@ -7,7 +7,8 @@ app = Flask(__name__)
 #Define a route to hello function
 @app.route('/')
 def home():
-    return render_template('index.html', username=session.get('username'), name=session.get('name'), usertype = session.get('usertype'))
+    print(session)
+    return render_template('index.html', session=session)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -51,13 +52,14 @@ def register():
             if status:
                 return render_template('register_customer.html', success='You have successfully registered!')
             else:
-                return render_template('register_customer.html', error='There was an error in registering, please try again!')
+                return render_template('register_customer.html', error='    ')
         else: # request.form.get('reg_type') == 'airlinestaff'
             status = check_register_airlinestaff(request.form)
             if status:
                 return render_template('register_airline_staff.html', success='You have successfully registered!')
             else:
                 return render_template('register_airline_staff.html', error='There was an error in registering, please try again!')
+<<<<<<< HEAD
 
 @app.route('/customer')
 def customer_home():
@@ -71,6 +73,17 @@ def purchased_flights():
         return render_template('purchased.html', data=data, username=session.get('username'), name=session.get('name'), usertype = session.get('usertype'))
 
 
+=======
+        
+@app.route('/flight_search', methods=['GET'])
+def flight_search():
+    if request.method == 'GET':
+        airports= get_airports()
+        cities = get_airport_cities()
+        flights = get_filtered_flights(request.args) if request.args else []
+        error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights else None
+        return render_template('flight_search.html', session=session, airports=airports, cities=cities, flights=flights, error=error)
+>>>>>>> upstream/main
 
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
