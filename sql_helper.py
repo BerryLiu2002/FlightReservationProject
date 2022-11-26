@@ -88,3 +88,12 @@ def check_register_airlinestaff(data):
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False
+
+def get_flights(email):
+    query = "SELECT flight_num, sold_price FROM TICKETS WHERE customer_email = %s"
+    cursor.execute(query, email)
+    data = cursor.fetchall()
+    if data:
+        return data
+    return None
+

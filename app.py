@@ -63,6 +63,15 @@ def register():
 def customer_home():
     return render_template('customer_homepage.html', username=session.get('username'), name=session.get('name'), usertype = session.get('usertype'))
 
+@app.route('/purchased', methods=['GET', 'POST'])
+def purchased_flights():
+    if request.method == 'GET':
+        data = get_flights(session.get('username'))
+        print(data)
+        return render_template('purchased.html', data=data, username=session.get('username'), name=session.get('name'), usertype = session.get('usertype'))
+
+
+
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask
