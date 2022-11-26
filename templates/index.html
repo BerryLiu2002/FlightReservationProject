@@ -4,19 +4,6 @@
 {% endblock %}
 
 
-<!-- Navlinks -->
-{% block navlinks %}
-<!-- Search for Flights -->
-<li><a href="{{url_for}}">Search for Flights</a></li>
-<!-- Login/Logout -->
-{% if username %}
-<li><a href="{{ url_for('logout')}}">Logout</a></li>
-{% else %}
-<li><a href="{{ url_for('login')}}">Login</a></li>
-{% endif %}
-
-{% endblock %}
-
 
 {% block body %}
 test

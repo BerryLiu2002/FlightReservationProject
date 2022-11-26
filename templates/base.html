@@ -16,8 +16,8 @@
                 </a>
             </div>
             <div id="greeting">
-                {% if name %}
-                    <p>Hello, {{name}}</p>
+                {% if session.get('name') %}
+                    <p>Hello, {{session.get('name')}}</p>
                 {% else %}
                     <p>Hello, Guest</p>
                 {% endif %}
@@ -25,7 +25,14 @@
         </div>
         <div class="right">
             <ul class="links">
-                {% block navlinks %}{% endblock %}
+                <!-- Search for Flights -->
+                <li><a href="{{url_for('flight_search')}}">Search for Flights</a></li>
+                <!-- Login/Logout -->
+                {% if session.get('name') %}
+                <li><a href="{{ url_for('logout')}}">Logout</a></li>
+                {% else %}
+                <li><a href="{{ url_for('login')}}">Login</a></li>
+                {% endif %}
             </ul>
         </div>
     </div>
