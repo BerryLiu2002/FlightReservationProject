@@ -89,7 +89,6 @@ def check_register_airlinestaff(data):
         print('Error: ', e)
         return False
 
-<<<<<<< HEAD
 def get_flights(email):
     query = "SELECT flight_num, sold_price FROM TICKETS WHERE customer_email = %s"
     cursor.execute(query, email)
@@ -98,7 +97,6 @@ def get_flights(email):
         return data
     return None
 
-=======
 def staff_default_view_flights():
     pass
 
@@ -146,4 +144,3 @@ def get_filtered_flights(args):
         each['arrival_time'] = each['arrival_time'].strftime("%Y-%m-%d")
     print(data)
     return data
->>>>>>> upstream/main
