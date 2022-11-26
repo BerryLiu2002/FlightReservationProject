@@ -25,6 +25,9 @@ def login():
             session['username'] = username
             session['name'] = f_name
             session['user_type'] = user_type
+            # different homepage for customer
+            if user_type == 'customer':
+                return redirect(url_for('customer_home'))
             return redirect(url_for('home'))
         else:
             return render_template('login.html', error='Invalid credentials, please try again!')
@@ -56,6 +59,21 @@ def register():
                 return render_template('register_airline_staff.html', success='You have successfully registered!')
             else:
                 return render_template('register_airline_staff.html', error='There was an error in registering, please try again!')
+<<<<<<< HEAD
+
+@app.route('/customer')
+def customer_home():
+    return render_template('customer_homepage.html', username=session.get('username'), name=session.get('name'), usertype = session.get('usertype'))
+
+@app.route('/purchased', methods=['GET', 'POST'])
+def purchased_flights():
+    if request.method == 'GET':
+        data = get_flights(session.get('username'))
+        print(data)
+        return render_template('purchased.html', data=data, username=session.get('username'), name=session.get('name'), usertype = session.get('usertype'))
+
+
+=======
         
 @app.route('/flight_search', methods=['GET'])
 def flight_search():
@@ -65,10 +83,11 @@ def flight_search():
         flights = get_filtered_flights(request.args) if request.args else []
         error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights else None
         return render_template('flight_search.html', session=session, airports=airports, cities=cities, flights=flights, error=error)
+>>>>>>> upstream/main
 
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask
 #for changes to go through, TURN OFF FOR PRODUCTION
 if __name__ == "__main__":
-	app.run('127.0.0.1', 5000, debug = True)
+	app.run('127.0.0.1', 4000, debug = True)

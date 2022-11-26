@@ -1,24 +1,25 @@
-import os, dotenv
+# import os, dotenv
+import dotenv
 import pymysql.cursors
 
 # load in environment variables
 dotenv.load_dotenv()
 
-# conn = pymysql.connect(host='localhost',
-#                        port=3306,          
-#                        user='root',
-#                        password='',
-#                        db='FlightReservation',
-#                        charset='utf8',
-#                        cursorclass=pymysql.cursors.DictCursor)
-
-conn = pymysql.connect(host=os.getenv('DB_HOST'),
-                       port=int(os.getenv('DB_PORT')),          
-                       user=os.getenv('DB_USER'),
-                       password=os.getenv('DB_PASSWORD'),
-                       db=os.getenv('DB_DATABASE'),
-                       charset=os.getenv('DB_CHARSET'),
+conn = pymysql.connect(host='localhost',
+                       port=4306,          
+                       user='root',
+                       password='',
+                       db='FlightReservation',
+                       charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
+
+# conn = pymysql.connect(host=os.getenv('localhost'),
+#                        port=int(os.getenv('3306')),          
+#                        user=os.getenv('root'),
+#                        password=os.getenv('password'),
+#                        db=os.getenv('airport'),
+#                        charset=os.getenv('utf8mb4'),
+#                        cursorclass=pymysql.cursors.DictCursor)
 
 
 
@@ -88,6 +89,16 @@ def check_register_airlinestaff(data):
         print('Error: ', e)
         return False
 
+<<<<<<< HEAD
+def get_flights(email):
+    query = "SELECT flight_num, sold_price FROM TICKETS WHERE customer_email = %s"
+    cursor.execute(query, email)
+    data = cursor.fetchall()
+    if data:
+        return data
+    return None
+
+=======
 def staff_default_view_flights():
     pass
 
@@ -135,3 +146,4 @@ def get_filtered_flights(args):
         each['arrival_time'] = each['arrival_time'].strftime("%Y-%m-%d")
     print(data)
     return data
+>>>>>>> upstream/main
