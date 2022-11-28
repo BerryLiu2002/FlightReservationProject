@@ -26,7 +26,9 @@
         <div class="right">
             <ul class="links">
                 <!-- Search for Flights -->
-                <li><a href="{{url_for('flight_search')}}">Search for Flights</a></li>
+                <li><a href="{{url_for('future_flights')}}">Future Flights</a></li>
+                <!-- Flight Status -->
+                <li><a href="{{url_for('flight_status')}}">Flight Status</a></li>
                 <!-- Login/Logout -->
                 {% if session.get('name') %}
                 <li><a href="{{ url_for('logout')}}">Logout</a></li>
