@@ -1,0 +1,50 @@
+{% extends 'base.html' %} 
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/flight_search.css')}}">
+{% endblock %}
+
+{% block body %}
+<form action="{{ url_for('flight_status') }}" method="GET">
+    <div id="filter_bar">
+
+        <div class="filter_item">
+            <label for="airline">Airline</label><br>
+            <select name="airline" id="airline" required="true">
+                <option disabled selected value> -- select an option -- </option>
+                {% for airline in airlines %}
+                    <option value="{{airline.name}}">{{airline.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class='filter_item'>
+            <label for="flight_num">Flight Number</label><br>
+            <input type="text" name="flight_num" id="flight_num" required="true">
+        </div>
+
+        <div class='filter_item'>
+            <label for="departure_time">Departure Time</label><br>
+            <input type="datetime-local" name="departure_time" id="departure_time" required="true">
+        </div>
+
+        <div class='filter_item'>
+            <label for="arrival_time">Arrival Date</label><br>
+            <input type="datetime-local" name="arrival_time" id="arrival_time" required="true">
+        </div>
+    </div>
+    <input type="submit" value="Search">
+</form>
+
+{% if error %}
+<p class="error"><strong>Error:</strong> {{error}}</p>
+{% endif %}
+
+{% if flights %}
+
+{% for flight in flights %}
+<p>{{flight}}</p>
+{% endfor %}
+
+{% endif %}
+{% endblock %}
