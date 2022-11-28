@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, session, url_for, redirect
+from flask import Flask, render_template, request, session, url_for, redirect, jsonify, flash
 from sql_helper import *
-
+import _json
 #Initialize the app from Flask
 app = Flask(__name__)
 
@@ -62,9 +62,16 @@ def register():
 def purchased_flights():
     if request.method == 'GET':
         data = get_flights(session.get('username'))
-        print(data)
+        print(data[0]['id'])
         return render_template('purchased.html', data=data, session=session)
 
+@app.route('/cancel', methods=['POST'])
+def cancel_trip():
+    id = request.form.get('id')
+    if cancel_flight(id):
+        data = get_flights(session.get('username'))
+        print(data)
+        return redirect('/purchased')
         
 @app.route('/flight_search', methods=['GET'])
 def flight_search():

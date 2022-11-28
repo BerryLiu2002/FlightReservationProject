@@ -11,8 +11,8 @@ conn = pymysql.connect(
     user=os.getenv('DB_USER'), 
     password=os.getenv('DB_PASSWORD'), 
     db=os.getenv('DB_DATABASE'), 
-    charset=os.getenv('DB_CHARSET'), 
-    cursorclass=pymysql.cursors.DictCursor)
+    charset=os.getenv('DB_CHARSET'),
+                       cursorclass=pymysql.cursors.DictCursor)
 
 
 cursor = conn.cursor()
@@ -82,12 +82,22 @@ def check_register_airlinestaff(data):
         return False
 
 def get_flights(email):
-    query = "SELECT flight_num, sold_price FROM TICKETS WHERE customer_email = %s"
+    query = "SELECT * FROM TICKETS WHERE customer_email = %s"
     cursor.execute(query, email)
     data = cursor.fetchall()
-    if data:
-        return data
-    return None
+    return data
+    
+
+def cancel_flight(id):
+    query = "DELETE FROM TICKETS WHERE id = %s"
+    try:
+        cursor.execute(query, id)
+        conn.commit()
+        print('number of rows deleted', cursor.rowcount, id)
+        return True
+    except pymysql.err.IntegrityError as e:
+        print('Error: ', e)
+        return False
 
 def staff_default_view_flights():
     pass
