@@ -1,6 +1,7 @@
 import os, dotenv
 import dotenv
 import pymysql.cursors
+from datetime import datetime
 
 # load in environment variables
 dotenv.load_dotenv()
@@ -118,10 +119,10 @@ def get_airport_cities():
     print(data)
     return data
 
-def get_filtered_flights(args):
+def filter_future_flights(args):
     inputs = ()
     sql = "SELECT * FROM flights"
-    condition_list = []
+    condition_list = ["departure_time > NOW()"]
     if args.get('departure'):
         condition_list.append("departure_airport = %s")
         inputs += (args.get('departure'),)
@@ -135,7 +136,7 @@ def get_filtered_flights(args):
         condition_list.append("arrival_airport IN (SELECT name FROM airports WHERE city = %s)")
         inputs += (args.get('arrival_city'),)
     if args.get('departure_date'):
-        condition_list.append("departure_time = %s")
+        condition_list.append("DATE(departure_time) = %s")
         inputs += (args.get('departure_date'),)
     if condition_list:
         sql += " WHERE " + " AND ".join(condition_list)
@@ -144,5 +145,24 @@ def get_filtered_flights(args):
     for each in data:
         each['departure_time'] = each['departure_time'].strftime("%Y-%m-%d")
         each['arrival_time'] = each['arrival_time'].strftime("%Y-%m-%d")
+    print(data)
+    return data
+
+def get_airlines():
+    query = 'SELECT DISTINCT name FROM airlines'
+    cursor.execute(query)
+    data = cursor.fetchall()
+    return data
+
+def filter_status_flights(args):
+    inputs = ()
+    sql = "SELECT * FROM Flights INNER JOIN Airplanes ON Flights.airplane_id = Airplanes.id WHERE airline = %s AND flight_num = %s AND departure_time = %s AND arrival_time = %s"
+    departure_time = datetime.strptime(args.get('departure_time'), '%Y-%m-%dT%H:%M').strftime('%Y-%m-%d %H:%M:%S')
+    arrival_time = datetime.strptime(args.get('arrival_time'), '%Y-%m-%dT%H:%M').strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute(sql, (args.get('airline'), args.get('flight_num'), departure_time, arrival_time))
+    data = cursor.fetchone()
+    # for each in data:
+    #     each['departure_time'] = each['departure_time'].strftime("%Y-%m-%d")
+    #     each['arrival_time'] = each['arrival_time'].strftime("%Y-%m-%d")
     print(data)
     return data

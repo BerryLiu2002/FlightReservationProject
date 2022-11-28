@@ -73,15 +73,34 @@ def cancel_trip():
         print(data)
         return redirect('/purchased')
         
-@app.route('/flight_search', methods=['GET'])
-def flight_search():
+@app.route('/future_flights', methods=['GET'])
+def future_flights():
     if request.method == 'GET':
         airports= get_airports()
         cities = get_airport_cities()
-        flights = get_filtered_flights(request.args) if request.args else []
+        flights = filter_future_flights(request.args) if request.args else []
         error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights else None
-        return render_template('flight_search.html', session=session, airports=airports, cities=cities, flights=flights, error=error)
+        return render_template('future_flights.html', session=session, airports=airports, cities=cities, flights=flights, error=error)
 
+@app.route('/flight_status', methods=['GET'])
+def flight_status():
+    if request.method == 'GET':
+        airlines = get_airlines()
+        if not request.args:
+            return render_template('flight_status.html', session=session, airlines=airlines)
+        else:
+            flight = filter_status_flights(request.args)
+            error = 'No flights found with your specifications' if not flight else None
+            if error:
+                return render_template('flight_status.html', session=session, airlines=airlines, error=error)
+            else:
+                return redirect(url_for('flight_details', flight=flight))
+
+@app.route('/flight_details/<flight>', methods=['GET'])
+def flight_details(flight):
+    if request.method == 'GET':
+        # flight = get_flight_details(request.args.get('flight_id'))
+        return render_template('flight_details.html', session=session, flight=flight)
 
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
