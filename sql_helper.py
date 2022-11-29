@@ -16,6 +16,7 @@ conn = pymysql.connect(
     cursorclass=pymysql.cursors.DictCursor)
 
 
+
 cursor = conn.cursor()
 
 def auth_user(username, password):
@@ -84,8 +85,23 @@ def check_register_airlinestaff(data):
 
 def get_flights(email):
     query = "SELECT * FROM TICKETS WHERE customer_email = %s"
+    query = "SELECT * FROM TICKETS WHERE customer_email = %s"
     cursor.execute(query, email)
     data = cursor.fetchall()
+    return data
+    
+
+def cancel_flight(id):
+    query = "DELETE FROM TICKETS WHERE id = %s"
+    try:
+        cursor.execute(query, id)
+        conn.commit()
+        print('number of rows deleted', cursor.rowcount, id)
+        return True
+    except pymysql.err.IntegrityError as e:
+        print('Error: ', e)
+        return False
+
     return data
     
 
