@@ -200,56 +200,111 @@ def view_all_flights_staff(data):
     departure_time = data.get('departure_time')
     departure_airport = data.get('departure_airport')
     arrival_airport = data.get('arrival_airport')
-    query = 'SELECT * FROM flights, airplanes \
-WHERE airplanes.airline = %s \
-AND flights.departure_time > %s AND flights.departure_time < %s \
-AND flights.departure_airport = %s AND flights.arrival_airport = %s'
+    query = """SELECT * FROM flights, airplanes 
+            WHERE airplanes.airline = %s 
+            AND flights.departure_time > %s AND flights.departure_time < %s 
+            AND flights.departure_airport = %s AND flights.arrival_airport = %s"""
     cursor.execute(query, (airline, departure_time, departure_time, departure_airport, arrival_airport))
-    data = cursor.fetchone() # fetchall
-    return data # What will data be?
+    data = cursor.fetchall()
+    return data
 
 def view_all_customers_staff(data):
     flight_num = data.get('flight_num')
-    query = 'SELECT name FROM customers INNER JOIN tickets ON customers.email = tickets.customer_email \
-WHERE tickets.flight_num = %s;'
+    query = 'SELECT name FROM customers INNER JOIN tickets ON customers.email = tickets.customer_email WHERE tickets.flight_num = %s;'
     cursor.execute(query, (flight_num))
-    data = cursor.fetchone()
+    data = cursor.fetchall()
     return data
 
 def view_ratings_comments(data): # How to fetch data from 2 queires
     flight_num = data.get('flight_num')
     query = "SELECT avg(rating) AS 'Average rating' FROM reviews \
-WHERE flight_num = %s;"
+            WHERE flight_num = %s;"
     query = "SELECT rating, comment FROM reviews \
-WHERE flight_num = %s;"
+            WHERE flight_num = %s;"
     cursor.execute(query, (flight_num))
-    data = cursor.fetchone() # Gets all possible result
+    data = cursor.fetchall()
     return data
 
 def view_freq_customer(data):
-    query = "SELECT email FROM tickets \
-WHERE COUNT(email) = \
-(SELECT MAX(COUNT(email)) FROM tickets)"
+    query = """SELECT email FROM tickets 
+            WHERE COUNT(email) = 
+            (SELECT MAX(COUNT(email)) FROM tickets)"""
     cursor.execute(query)
-    data = cursor.fetchone()
+    data = cursor.fetchall()
     return data
 
 def view_report(data):
     departure_time = data.get('departure_time')   
-    query = "Select count(id) AS total_tickets_sold FROM Tickets WHERE id = \
-(SELECT tickets.id FROM tickets JOIN fLights \
-ON tickets.flight_num = flights.flight_num \
-WHERE flights.departure_time > %s AND flights.departure_time < %s)"
+    query = """Select count(id) AS total_tickets_sold FROM Tickets WHERE id = 
+            (SELECT tickets.id FROM tickets JOIN fLights 
+            ON tickets.flight_num = flights.flight_num 
+            WHERE flights.departure_time > %s AND flights.departure_time < %s)"""
     cursor.execute(query, (departure_time, departure_time))
-    data = cursor.fetchone()
+    data = cursor.fetchall()
     return data
 
 def view_revenue(data):
     departure_time = data.get('departure_time')
-    query = "Select sum(sold_price) AS total_revenue FROM Tickets WHERE id = \
-(SELECT tickets.id FROM tickets JOIN flights \
-ON tickets.flight_num = flights.flight_num \
-WHERE flights.departure_time > %s AND flights.departure_time < %s)"
+    query = """Select sum(sold_price) AS total_revenue FROM Tickets WHERE id = 
+            (SELECT tickets.id FROM tickets JOIN flights 
+            ON tickets.flight_num = flights.flight_num 
+            WHERE flights.departure_time > %s AND flights.departure_time < %s)"""
     cursor.execute(query, (departure_time, departure_time))
-    data = cursor.fetchone()
+    data = cursor.fetchall()
     return data
+
+def create_new_flights(data):
+    flight_num = data.get('flight_num')
+    airplane_id = data.get('airplane_id')
+    base_price = data.get('base_price')
+    status = data.get('status')
+    departure_airport = data.get('departure_airport')
+    arrival_airport = data.get('arrival_airport')
+    departure_time = data.get('departure_time')
+    arrival_time = data.get('arrival_time')
+    query = 'INSERT INTO flights (flight_num, airplane_id, base_price, status, departure_airport, arrival_airport, departure_time, arrival_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'
+    try:
+        cursor.execute(query, (flight_num, airplane_id, base_price, status, departure_airport, arrival_airport, departure_time, arrival_time))
+        conn.commit()
+    except pymysql.err.IntegrityError as e:
+        print('Error: ', e)
+        return False
+
+def add_airplane(data):
+    id = data.get('id')
+    num_seats = data.get('num_seats')
+    manufacturing_company = data.get('manufacturing_company')
+    age = data.get('age')
+    airline = data.get('airline')
+    query = 'INSERT INTO airplanes (id, num_seats, manufacturing_company, age, airline) VALUES (%s, %s, %s, %s, %s)'
+    try:
+        cursor.execute(query, (id, num_seats, manufacturing_company, age, airline))
+        conn.commit()
+    except pymysql.err.IntegrityError as e:
+        print('Error: ', e)
+        return False
+
+def add_airport(data):
+    name = data.get('name')
+    city = data.get('city')
+    country = data.get('country')
+    type = data.get('type')
+    query = 'INSERT INTO airports(name, city, country, type) VALUES (%s, %s, %s, %s)'
+    try:
+        cursor.execute(query, (name, city, country, type))
+        conn.commit()
+    except pymysql.err.IntegrityError as e:
+        print('Error: ', e)
+        return False 
+
+def change_flight_status(data):
+    status = data.get('status')
+    flight_num = data.get('flight_num')
+    query = 'UPDATE flights SET status = %s WHERE flight_num = %s'
+    try:
+        cursor.execute(query, (status, flight_num))
+        conn.commit()
+    except pymysql.err.IntegrityError as e:
+        print('Error: ', e)
+        return False 
+    
