@@ -12,7 +12,7 @@ conn = pymysql.connect(
     user=os.getenv('DB_USER'), 
     password=os.getenv('DB_PASSWORD'), 
     db=os.getenv('DB_DATABASE'), 
-    charset=os.getenv('DB_CHARSET'), 
+    charset=os.getenv('DB_CHARSET'),
     cursorclass=pymysql.cursors.DictCursor)
 
 
@@ -83,12 +83,22 @@ def check_register_airlinestaff(data):
         return False
 
 def get_flights(email):
-    query = "SELECT flight_num, sold_price FROM TICKETS WHERE customer_email = %s"
+    query = "SELECT * FROM TICKETS WHERE customer_email = %s"
     cursor.execute(query, email)
     data = cursor.fetchall()
-    if data:
-        return data
-    return None
+    return data
+    
+
+def cancel_flight(id):
+    query = "DELETE FROM TICKETS WHERE id = %s"
+    try:
+        cursor.execute(query, id)
+        conn.commit()
+        print('number of rows deleted', cursor.rowcount, id)
+        return True
+    except pymysql.err.IntegrityError as e:
+        print('Error: ', e)
+        return False
 
 def staff_default_view_flights():
     pass
@@ -146,13 +156,24 @@ def get_airlines():
 
 def filter_status_flights(args):
     inputs = ()
-    sql = "SELECT * FROM Flights INNER JOIN Airplanes ON Flights.airplane_id = Airplanes.id WHERE airline = %s AND flight_num = %s AND departure_time = %s AND arrival_time = %s"
+    sql = "SELECT * FROM Flights INNER JOIN Airplanes ON Flights.airplane_id = Airplanes.id WHERE airline = %s AND flight_num = %s AND departure_time = %s"
     departure_time = datetime.strptime(args.get('departure_time'), '%Y-%m-%dT%H:%M').strftime('%Y-%m-%d %H:%M:%S')
-    arrival_time = datetime.strptime(args.get('arrival_time'), '%Y-%m-%dT%H:%M').strftime('%Y-%m-%d %H:%M:%S')
-    cursor.execute(sql, (args.get('airline'), args.get('flight_num'), departure_time, arrival_time))
+    cursor.execute(sql, (args.get('airline'), args.get('flight_num'), departure_time))
     data = cursor.fetchone()
-    # for each in data:
-    #     each['departure_time'] = each['departure_time'].strftime("%Y-%m-%d")
-    #     each['arrival_time'] = each['arrival_time'].strftime("%Y-%m-%d")
-    print(data)
+    return data
+
+def get_flight_details(airline, flight_num, departure_time):
+    sql = """SELECT *
+            FROM Flights f
+            INNER JOIN Airplanes 
+                ON f.flight_num = Airplanes.id 
+            INNER JOIN Airports da
+                ON f.departure_airport = da.name
+            INNER JOIN Airports aa
+                ON f.arrival_airport = aa.name
+            WHERE airline = %s AND flight_num = %s AND departure_time = %s"""
+    cursor.execute(sql, (airline, flight_num, departure_time))
+    data = cursor.fetchone()
+    data['departure_time'] = data['departure_time'].strftime("%m/%d/%Y %I:%M %p")
+    data['arrival_time'] = data['arrival_time'].strftime("%m/%d/%Y %I:%M %p")
     return data

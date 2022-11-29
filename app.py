@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, session, url_for, redirect
+from flask import Flask, render_template, request, session, url_for, redirect, jsonify, flash
 from sql_helper import *
-
+import _json
 #Initialize the app from Flask
 app = Flask(__name__)
 
@@ -62,18 +62,31 @@ def register():
 def purchased_flights():
     if request.method == 'GET':
         data = get_flights(session.get('username'))
-        print(data)
+        print(data[0]['id'])
         return render_template('purchased.html', data=data, session=session)
 
+@app.route('/cancel', methods=['POST'])
+def cancel_trip():
+    id = request.form.get('id')
+    if cancel_flight(id):
+        data = get_flights(session.get('username'))
+        print(data)
+        return redirect('/purchased')
         
 @app.route('/future_flights', methods=['GET'])
 def future_flights():
     if request.method == 'GET':
         airports= get_airports()
         cities = get_airport_cities()
-        flights = filter_future_flights(request.args) if request.args else []
-        error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights else None
-        return render_template('future_flights.html', session=session, airports=airports, cities=cities, flights=flights, error=error)
+        flights_to = filter_future_flights(request.args) if request.args else []
+        if request.args.get('return_date'): # if return date is specified swap origin and destination, change departure date and run query again
+            ret_args = request.args.to_dict()
+            print(ret_args)
+            ret_args['departure_date'] = ret_args['return_date']
+            ret_args['arrival'], ret_args['departure'] = ret_args['departure'], ret_args['arrival']
+        flights_back = filter_future_flights(ret_args) if request.args.get('return_date') else []
+        error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
+        return render_template('future_flights.html', session=session, airports=airports, cities=cities, flights_to=flights_to, flights_back=flights_back, error=error)
 
 @app.route('/flight_status', methods=['GET'])
 def flight_status():
@@ -87,12 +100,13 @@ def flight_status():
             if error:
                 return render_template('flight_status.html', session=session, airlines=airlines, error=error)
             else:
-                return redirect(url_for('flight_details', flight=flight))
+                return redirect(url_for('flight_details', airline=flight['airline'], flight_num=flight['flight_num'], departure_time=flight['departure_time'], arrival_time=flight['arrival_time']))
 
-@app.route('/flight_details/<flight>', methods=['GET'])
-def flight_details(flight):
+@app.route('/flight_details/<airline>/<flight_num>/<departure_time>', methods=['GET'])
+def flight_details(airline, flight_num, departure_time):
     if request.method == 'GET':
-        # flight = get_flight_details(request.args.get('flight_id'))
+        flight = get_flight_details(airline, flight_num, departure_time)
+        print(flight)
         return render_template('flight_details.html', session=session, flight=flight)
 
 app.secret_key = 'some key that you will never guess'

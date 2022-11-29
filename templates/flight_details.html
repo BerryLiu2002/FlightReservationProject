@@ -1,11 +1,11 @@
-{% extends 'base.html' %} 
-
-{% block head %}
-{% endblock %}
-
-{% block body %}
-
-    {% if flight %}
-    <p>{{flight}}</p>
-    {% endif %}
+{% extends 'base.html' %} {% block head %} {% endblock %} {% block body %}
+<h1>Flight {{flight['flight_num']}}</h1>
+<p>
+  {{flight['departure_airport']}} ({{flight['city']}}, {{flight['country']}}) to
+  {{flight['arrival_airport']}} ({{flight['aa.city']}},
+  {{flight['aa.country']}})
+</p>
+<p>Departure Time: {{flight['departure_time']}}</p>
+<p>Arrival Time: {{flight['arrival_time']}}</p>
+<p>Status: {{flight['status']}}</p>
 {% endblock %}

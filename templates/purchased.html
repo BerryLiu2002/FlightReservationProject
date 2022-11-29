@@ -1,5 +1,12 @@
-{% extends 'index.html' %} 
+{% extends 'base.html' %} 
 
 {% block body %}
-<p>{{data}}</p>
+{% for flight in data %}
+<form action="{{ url_for('cancel_trip') }}" method="POST">
+  <li>{{flight}}
+    <button type="submit">Cancel Flight</button>
+  </li>
+  <input type="hidden" name="id" value="{{flight['id']}}">
+</form>
+{% endfor %}
 {% endblock %}
