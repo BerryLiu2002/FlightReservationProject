@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, session, url_for, redirect, jsonify, flash
 from sql_helper import *
 import _json
+from encrypt import encrypt_string
 #Initialize the app from Flask
 app = Flask(__name__)
+
 
 #Define a route to hello function
 @app.route('/')
@@ -50,7 +52,7 @@ def register():
             if status:
                 return render_template('register_customer.html', success='You have successfully registered!')
             else:
-                return render_template('register_customer.html', error='    ')
+                return render_template('register_customer.html', error='There was an error in registering, please try again!')
         else: # request.form.get('reg_type') == 'airlinestaff'
             status = check_register_airlinestaff(request.form)
             if status:

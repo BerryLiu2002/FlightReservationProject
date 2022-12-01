@@ -2,6 +2,7 @@ import os, dotenv
 import dotenv
 import pymysql.cursors
 from datetime import datetime
+from encrypt import encrypt_string
 
 # load in environment variables
 dotenv.load_dotenv()
@@ -18,10 +19,10 @@ conn = pymysql.connect(
 
 
 
-
 cursor = conn.cursor()
 
 def auth_user(username, password):
+    password = encrypt_string(password)
     # authenticate user upon login (returns tuple (user firstname, user type) if successful, (None, None) otherwise)
     query = 'SELECT name FROM customers WHERE email = %s and password = %s'
     cursor.execute(query, (username, password))
@@ -41,7 +42,7 @@ def auth_user(username, password):
 def check_register_customer(data):
     name = data.get('name')
     email = data.get('email')
-    password = data.get('password')
+    password = encrypt_string(data.get('password'))
     building_num = data.get('building_num')
     street = data.get('street')
     city = data.get('city')
@@ -64,7 +65,7 @@ def check_register_airlinestaff(data):
     first_name = data.get('first_name')
     last_name = data.get('last_name')
     username = data.get('username')
-    password = data.get('password')
+    password = encrypt_string(data.get('password'))
     date_of_birth = data.get('date_of_birth')
     airline_name = data.get('airline')
     query = 'INSERT INTO airlinestaff (first_name, last_name, username, password, date_of_birth, works_at) VALUES (%s, %s, %s, %s, %s, %s)'
@@ -86,7 +87,6 @@ def check_register_airlinestaff(data):
         return False
 
 def get_flights(email):
-    query = "SELECT * FROM TICKETS WHERE customer_email = %s"
     query = "SELECT * FROM TICKETS WHERE customer_email = %s"
     cursor.execute(query, email)
     data = cursor.fetchall()
@@ -139,7 +139,11 @@ def get_airport_cities():
 
 def filter_future_flights(args):
     inputs = ()
-    sql = "SELECT * FROM flights"
+    sql = """SELECT flights.flight_num, departure_airport, arrival_airport, departure_time, base_price, 
+            num_seats - (SELECT COUNT(*) FROM tickets GROUP BY tickets.flight_num HAVING tickets.flight_num = flights.flight_num) AS seats_left
+            FROM Flights 
+            LEFT JOIN Airplanes 
+	        ON Flights.airplane_id = Airplanes.id"""
     condition_list = ["departure_time > NOW()"]
     if args.get('departure'):
         condition_list.append("departure_airport = %s")
@@ -161,8 +165,7 @@ def filter_future_flights(args):
     cursor.execute(sql, inputs)
     data = cursor.fetchall()
     for each in data:
-        each['departure_time'] = each['departure_time'].strftime("%Y-%m-%d")
-        each['arrival_time'] = each['arrival_time'].strftime("%Y-%m-%d")
+        each['departure_time'] = each['departure_time'].strftime("%m/%d/%Y %I:%M %p")
     print(data)
     return data
 
@@ -307,4 +310,3 @@ def change_flight_status(data):
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False 
-    

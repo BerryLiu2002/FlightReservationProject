@@ -1,9 +1,10 @@
-{% extends 'base.html' %} {% block head %}
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/flight_search.css')}}"
-/>
-{% endblock %} {% block body %}
+{% extends 'base.html' %} 
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/flight_search.css')}}"/>
+{% endblock %} 
+
+{% block body %}
 <form action="{{ url_for('future_flights') }}" method="GET">
   <div id="filter_bar">
     <div class="filter_item">
@@ -71,8 +72,7 @@
   <tr>
     <th>Departure Airport</th>
     <th>Arrival Airport</th>
-    <th>Departure Date</th>
-    <th>Arrival Date</th>
+    <th>Departure Time</th>
     <th>Price</th>
     {% if session.get('user_type') == 'customer' %}
     <th>Book</th>
@@ -83,10 +83,13 @@
     <td>{{flight.departure_airport}}</td>
     <td>{{flight.arrival_airport}}</td>
     <td>{{flight.departure_time}}</td>
-    <td>{{flight.arrival_time}}</td>
     <td>${{flight.base_price}}</td>
-    {% if session.get('user_type') == 'customer' %}
-    <td><a href="">Book</a></td>
+    {% if session.get('user_type') == 'customer' %} 
+      {% if flight['seats_left'] > 0 %}
+        <th>Book {{flight['seats_left']}}</th>
+      {% else %}
+        <th>Full</th>
+      {% endif %} 
     {% endif %}
   </tr>
   {% endfor %}
@@ -102,11 +105,10 @@
   <tr>
     <th>Departure Airport</th>
     <th>Arrival Airport</th>
-    <th>Departure Date</th>
-    <th>Arrival Date</th>
+    <th>Departure Time</th>
     <th>Price</th>
     {% if session.get('user_type') == 'customer' %}
-    <th>Book</th>
+    <th><a href="">Book</a></th>
     {% endif %}
   </tr>
   {% for flight in flights_back %}
@@ -114,10 +116,13 @@
     <td>{{flight.departure_airport}}</td>
     <td>{{flight.arrival_airport}}</td>
     <td>{{flight.departure_time}}</td>
-    <td>{{flight.arrival_time}}</td>
     <td>${{flight.base_price}}</td>
-    {% if session.get('user_type') == 'customer' %}
-    <td><a href="">Book</a></td>
+    {% if session.get('user_type') == 'customer' %} 
+      {% if flight['seats_left'] > 0 %}
+        <td>Book</td>
+      {% else %}
+        <td>Full</td>
+      {% endif %} 
     {% endif %}
   </tr>
   {% endfor %}
