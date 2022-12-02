@@ -86,7 +86,7 @@
     <td>${{flight.base_price}}</td>
     {% if session.get('user_type') == 'customer' %} 
       {% if flight['seats_left'] > 0 %}
-        <th>Book {{flight['seats_left']}}</th>
+        <td><a href="{{ url_for('book_flight', flight_num=flight.flight_num, departure_time=flight.departure_time, airline=flight.airline) }}">Book </a>({{flight['seats_left']}} seat(s) left)</td>
       {% else %}
         <th>Full</th>
       {% endif %} 
@@ -94,8 +94,7 @@
   </tr>
   {% endfor %}
 </table>
-{% endif %} {% if flights_back %} {% if session.get('user_type') != 'customer'
-%}
+{% endif %} {% if flights_back %} {% if session.get('user_type') != 'customer'%}
 <p>
   <strong>Note: You must be logged in as a customer to book a flight.</strong>
 </p>
@@ -119,7 +118,7 @@
     <td>${{flight.base_price}}</td>
     {% if session.get('user_type') == 'customer' %} 
       {% if flight['seats_left'] > 0 %}
-        <td>Book</td>
+        <td><a href="{{ url_for('book_flight', flight_num=flight.flight_num, departure_time=flight.departure_time, airline=flight.airline) }}">Book </a>({{flight['seats_left']}} seat(s) left)</td>
       {% else %}
         <td>Full</td>
       {% endif %} 

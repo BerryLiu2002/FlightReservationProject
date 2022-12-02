@@ -38,3 +38,11 @@ a {
 #navlogo img {
     width: 100px;
 }
+
+.success {
+    color: green;
+}
+
+.error {
+    color: red;
+}

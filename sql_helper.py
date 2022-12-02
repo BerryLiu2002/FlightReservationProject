@@ -139,8 +139,9 @@ def get_airport_cities():
 
 def filter_future_flights(args):
     inputs = ()
-    sql = """SELECT flights.flight_num, departure_airport, arrival_airport, departure_time, base_price, 
-            num_seats - (SELECT COUNT(*) FROM tickets GROUP BY tickets.flight_num HAVING tickets.flight_num = flights.flight_num) AS seats_left
+    sql = """SELECT flights.flight_num, departure_airport, arrival_airport, departure_time, base_price, flights.airline, 
+            num_seats - (SELECT COUNT(*) FROM tickets GROUP BY tickets.flight_num, tickets.departure_time, tickets.airline 
+                         HAVING tickets.flight_num = flights.flight_num AND tickets.departure_time = flights.departure_time AND tickets.airline = flights.airline) AS seats_left
             FROM Flights 
             LEFT JOIN Airplanes 
 	        ON Flights.airplane_id = Airplanes.id"""
@@ -164,8 +165,8 @@ def filter_future_flights(args):
         sql += " WHERE " + " AND ".join(condition_list)
     cursor.execute(sql, inputs)
     data = cursor.fetchall()
-    for each in data:
-        each['departure_time'] = each['departure_time'].strftime("%m/%d/%Y %I:%M %p")
+    # for each in data:
+    #     each['departure_time'] = each['departure_time'].strftime("%m/%d/%Y %I:%M %p")
     print(data)
     return data
 
@@ -177,7 +178,7 @@ def get_airlines():
 
 def filter_status_flights(args):
     inputs = ()
-    sql = "SELECT * FROM Flights INNER JOIN Airplanes ON Flights.airplane_id = Airplanes.id WHERE airline = %s AND flight_num = %s AND departure_time = %s"
+    sql = "SELECT * FROM Flights WHERE airline = %s AND flight_num = %s AND departure_time = %s"
     departure_time = datetime.strptime(args.get('departure_time'), '%Y-%m-%dT%H:%M').strftime('%Y-%m-%d %H:%M:%S')
     cursor.execute(sql, (args.get('airline'), args.get('flight_num'), departure_time))
     data = cursor.fetchone()
@@ -186,8 +187,6 @@ def filter_status_flights(args):
 def get_flight_details(airline, flight_num, departure_time):
     sql = """SELECT *
             FROM Flights f
-            INNER JOIN Airplanes 
-                ON f.flight_num = Airplanes.id 
             INNER JOIN Airports da
                 ON f.departure_airport = da.name
             INNER JOIN Airports aa
@@ -197,6 +196,7 @@ def get_flight_details(airline, flight_num, departure_time):
     data = cursor.fetchone()
     data['departure_time'] = data['departure_time'].strftime("%m/%d/%Y %I:%M %p")
     data['arrival_time'] = data['arrival_time'].strftime("%m/%d/%Y %I:%M %p")
+    return data
 
 def view_all_flights_staff(data):
     airline = data.get('airline')
@@ -310,3 +310,30 @@ def change_flight_status(data):
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False 
+
+
+def book_flight_ticket(email, flight_num, departure_time, airline, form):
+    # make sure email is a customer
+    query = 'SELECT * FROM customers WHERE email = %s'
+    cursor.execute(query, (email))
+    data = cursor.fetchone()
+    if data is None:
+        return False, 'Only customers can book flights. Please login as a customer.'
+    # make sure flight still has seats remaining
+    query = 'SELECT base_price, num_seats> (SELECT COUNT(*) FROM tickets AS seats_left WHERE flight_num = %s AND departure_time = %s AND airline = %s) AS is_seating FROM flights INNER JOIN airplanes ON flights.airplane_id = airplanes.id WHERE flight_num = %s AND departure_time = %s AND flights.airline = %s'
+    cursor.execute(query, (flight_num, departure_time, airline, flight_num, departure_time, airline))
+    data = cursor.fetchone()
+    print(data)
+    sold_price = data.get('base_price')
+    is_seating = data.get('is_seating')
+    if not is_seating:
+        return False, 'No seats remaining on this flight.'
+    else:
+        query = 'INSERT INTO tickets (sold_price, card_type, card_num, name_on_card, exp_date,customer_email, flight_num, departure_time, airline) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        try:
+            cursor.execute(query, (sold_price, form['card_type'], form['card_num'], form['name_on_card'], form['exp_date'], email, flight_num, departure_time, airline))
+            conn.commit()
+            return True, 'Flight booked successfully.'
+        except pymysql.err.IntegrityError as e:
+            print('Error: ', e)
+            return False, 'Error booking flight.'

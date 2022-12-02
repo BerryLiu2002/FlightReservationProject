@@ -111,6 +111,21 @@ def flight_details(airline, flight_num, departure_time):
         print(flight)
         return render_template('flight_details.html', session=session, flight=flight)
 
+@app.route('/book/<flight_num>/<departure_time>/<airline>', methods=['GET', 'POST'])
+def book_flight(flight_num, departure_time, airline):
+    flight = get_flight_details(airline, flight_num, departure_time)
+    if request.method == 'GET':
+        return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline)
+    if request.method == 'POST':
+        if not session.get('username', None):
+            return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, error="You must be logged in as a customer to book a flight")
+        print(request.form)
+        success, message = book_flight_ticket(session.get('username'), flight_num, departure_time, airline, request.form)
+        if success:
+            return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, success=message)
+        else:
+            return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, error=message)
+
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask
