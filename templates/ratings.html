@@ -4,7 +4,7 @@
 {% for flight in data %}
 <form action="{{ url_for('rate') }}" method="GET">
   <li>{{flight}}
-    <a href="{{ url_for('form') }}">Rate</a>
+    <a href="{{ url_for('form' flight_num = flight[flight_num]) }}">Rate</a>
     <input type="hidden" id="flight_num" value="{{flight['flight_num']}}">
   </li>
 </form>
