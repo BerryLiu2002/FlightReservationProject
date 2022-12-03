@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, session, url_for, redirect, jsonify, flash
 from sql_helper import *
 import _json
+from encrypt import encrypt_string
 #Initialize the app from Flask
 app = Flask(__name__)
+
 
 #Define a route to hello function
 @app.route('/')
@@ -50,7 +52,7 @@ def register():
             if status:
                 return render_template('register_customer.html', success='You have successfully registered!')
             else:
-                return render_template('register_customer.html', error='    ')
+                return render_template('register_customer.html', error='There was an error in registering, please try again!')
         else: # request.form.get('reg_type') == 'airlinestaff'
             status = check_register_airlinestaff(request.form)
             if status:
@@ -109,6 +111,21 @@ def flight_details(airline, flight_num, departure_time):
         print(flight)
         return render_template('flight_details.html', session=session, flight=flight)
 
+@app.route('/book/<flight_num>/<departure_time>/<airline>', methods=['GET', 'POST'])
+def book_flight(flight_num, departure_time, airline):
+    flight = get_flight_details(airline, flight_num, departure_time)
+    if request.method == 'GET':
+        return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline)
+    if request.method == 'POST':
+        if not session.get('username', None):
+            return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, error="You must be logged in as a customer to book a flight")
+        print(request.form)
+        success, message = book_flight_ticket(session.get('username'), flight_num, departure_time, airline, request.form)
+        if success:
+            return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, success=message)
+        else:
+            return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, error=message)
+
 @app.route('/view_flight_staff', methods=['GET'])
 def view_flight_staff():
     if request.method == 'GET':
@@ -117,8 +134,7 @@ def view_flight_staff():
         flights_to = filter_future_flights(request.args) if request.args else []
         error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
     return render_template('view_flight_staff.html', session=session, airports=airports, cities=cities, flights_to=flights_to, error=error)
-
-
+    
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask

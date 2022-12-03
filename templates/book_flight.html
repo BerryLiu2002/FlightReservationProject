@@ -1,0 +1,58 @@
+{% extends 'base.html' %} 
+
+{% block head %}
+{% endblock %}
+
+
+
+{% block body %}
+
+    <h1>Booking Confirmation</h1>
+    <h2>Flight {{flight['flight_num']}} {{flight['city']}} to {{flight['aa.city']}}</h2>
+    
+    <h3>Departure</h3>
+    </p><strong>Date:</strong> {{flight['departure_time']}}</p>
+    </p><strong>Location:</strong> {{flight['city']}} - {{flight['departure_airport']}}, {{flight['country']}}</p>
+
+    <h3>Arrival</h3>
+    </p><strong>Date:</strong> {{flight['arrival_time']}}</p>
+    </p><strong>Location:</strong> {{flight['aa.city']}} - {{flight['arrival_airport']}}, {{flight['aa.country']}}</p>
+
+    <h3>Cost</h3>
+    <p><strong>Total</strong> ${{flight['base_price']}}</p>
+
+    {% if error %}
+        <p class="error"><strong>Error:</strong> {{error}}</p>
+    {% endif %}
+    {% if success %}
+        <p class="success"><strong>Success:</strong> {{success}}</p>
+    {% endif %}
+    <br>
+    <h3>Enter Your Credit Card Information</h3>
+    <form action="{{ url_for('book_flight', flight_num=flight_num, departure_time=departure_time, airline=airline) }}" method="POST">
+        
+        <label for="card_type">Card Type</label>
+        <select name="card_type" id="card_type" required="true">
+            <option disabled selected value>-- select an option --</option> 
+            <option value="visa">Visa</option>
+            <option value="mastercard">Mastercard</option>
+            <option value="amex">American Express</option>
+        </select>
+        <br>
+
+        <label for="card_num">Credit Card Number</label>
+        <input type="text" name="card_num" id="card_num" placeholder="Enter your credit card number" required="true">
+        <br>
+
+        <label for="name_on_card">Cardholder Name</label>
+        <input type="text" name="name_on_card" id="name_on_card" placeholder="Enter your cardholder name" required="true">
+        <br>
+
+        <label for="exp_date">Expiration Date</label>
+        <input type="date" name="exp_date" id="exp_date" placeholder="Enter your expiration date" required="true">
+        <br>
+        
+        <input type="submit" value="Book Flight">
+    </form>
+
+{% endblock %}
