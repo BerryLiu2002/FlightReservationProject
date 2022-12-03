@@ -109,6 +109,16 @@ def flight_details(airline, flight_num, departure_time):
         print(flight)
         return render_template('flight_details.html', session=session, flight=flight)
 
+@app.route('/view_flight_staff', methods=['GET'])
+def view_flight_staff():
+    if request.method == 'GET':
+        airports= get_airports()
+        cities = get_airport_cities()
+        flights_to = filter_future_flights(request.args) if request.args else []
+        error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
+    return render_template('view_flight_staff.html', session=session, airports=airports, cities=cities, flights_to=flights_to, error=error)
+
+
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask
