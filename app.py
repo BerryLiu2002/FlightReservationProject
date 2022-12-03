@@ -94,6 +94,11 @@ def form():
         if make_review(rating, comment, email, flight_num):
             return render_template('rating-form.html',session=session)
         return redirect('/purchased')
+@app.route('/spending', methods=['GET'])
+def spending():
+    if request.method=='GET':
+        data = get_spending(session.get('username'))
+        return render_template('spending.html', session=session, data=data)
 
 @app.route('/future_flights', methods=['GET'])
 def future_flights():
