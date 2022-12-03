@@ -75,21 +75,20 @@ def cancel_trip():
         print(data)
         return redirect('/purchased')
 
-# @app.route('/ratings', methods = ['GET', 'POST'])
-# def rate():
-#     if request.method == 'GET':
-#         data = get_ratable_flights(session.get('username'))
-#         return render_template('ratings.html', data=data, session=session)
-
-@app.route('/rating-form', methods = ['GET', 'POST'])
-def form():
+@app.route('/ratings', methods = ['GET', 'POST'])
+def rate():
     if request.method == 'GET':
-        return render_template('rating-form.html', session=session)
+        data = get_ratable_flights(session.get('username'))
+        return render_template('ratings.html', data=data, session=session)
+
+@app.route('/rating-form/<flight_num>', methods = ['GET', 'POST'])
+def form(flight_num):
+    if request.method == 'GET':
+        return render_template('rating-form.html', data = flight_num , session=session)
     if request.method == 'POST':
         rating = request.form.get('stars')
         comment = request.form.get('comment')
         email = session.get('username')
-        flight_num = request.form.get('flight_num')
         print(rating, comment, email, flight_num)
         if make_review(rating, comment, email, flight_num):
             return render_template('rating-form.html',session=session)

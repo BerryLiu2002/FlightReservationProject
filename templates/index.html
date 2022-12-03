@@ -9,7 +9,7 @@
 
     {% if session.user_type == 'customer' %}
         <li><a href="{{ url_for('purchased_flights')}}">List out Purchased Flights</a></li>
-        <li><a href="{{url_for('form')}}">Rate my Flights</a></li>
+        <li><a href="{{url_for('rate')}}">Rate my Flights</a></li>
         <li><a href="{{url_for('spending')}}">Track my spending</a></li>
     {% elif session.user_type == 'airlinestaff' %}
 
