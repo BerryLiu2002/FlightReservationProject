@@ -128,12 +128,17 @@ def cancel_flight(id):
     try:
         cursor.execute(query, id)
         conn.commit()
-        print('number of rows deleted', cursor.rowcount, id)
+        # print('number of rows deleted', cursor.rowcount, id)
         return True
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False
-
+def get_spending(email):
+    query = "select sum(sold_price) from flights natural join tickets where customer_email = %s"
+    cursor.execute(query, email)
+    data = cursor.fetchall()
+    return data
+    
 def staff_default_view_flights():
     pass
 
