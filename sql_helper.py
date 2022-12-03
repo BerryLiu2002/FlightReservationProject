@@ -91,14 +91,30 @@ def get_flights(email):
     cursor.execute(query, email)
     data = cursor.fetchall()
     return data
-    
 
+def get_ratable_flights(email):
+    query = "SELECT * FROM (SELECT * FROM Tickets NATURAL join Flights WHERE Tickets.customer_email = %s) as X where CURRENT_TIMESTAMP > X.departure_time;"
+    cursor.execute(query, email)
+    data = cursor.fetchall()
+    return data
+
+def make_review(rating, comment, email, flight_num):
+    query = "INSERT INTO REVIEWS (rating,comment,customer_email,flight_num) VALUES (%s,%s,%s,%s);"
+    try:
+        cursor.execute(query, (rating,comment,email,flight_num))
+        conn.commit()
+        return True
+    except pymysql.err.IntegrityError as e:
+        print('Error: ', e)
+        return False
+    
 def cancel_flight(id):
+    # need to update queries b/c flight id is not enough
     query = "DELETE FROM TICKETS WHERE id = %s"
     try:
         cursor.execute(query, id)
         conn.commit()
-        print('number of rows deleted', cursor.rowcount, id)
+        # print('number of rows deleted', cursor.rowcount, id)
         return True
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
@@ -112,12 +128,17 @@ def cancel_flight(id):
     try:
         cursor.execute(query, id)
         conn.commit()
-        print('number of rows deleted', cursor.rowcount, id)
+        # print('number of rows deleted', cursor.rowcount, id)
         return True
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False
-
+def get_spending(email):
+    query = "select sum(sold_price) from flights natural join tickets where customer_email = %s"
+    cursor.execute(query, email)
+    data = cursor.fetchall()
+    return data
+    
 def staff_default_view_flights():
     pass
 
