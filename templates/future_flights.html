@@ -1,96 +1,129 @@
 {% extends 'base.html' %} 
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/flight_search.css')}}">
-{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/flight_search.css')}}"/>
+{% endblock %} 
 
 {% block body %}
 <form action="{{ url_for('future_flights') }}" method="GET">
-    <div id="filter_bar">
-
-        <div class="filter_item">
-            <label for="departure">Departure Airport</label><br>
-            <select name="departure" id="departure">
-                <option disabled selected value> -- select an option -- </option>
-                {% for airport in airports %}
-                    <option value="{{airport.name}}">{{airport.name}}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="filter_item">
-            <label for="arrival">Arrival Airport</label><br>
-            <select name="arrival" id="arrival">
-                <option disabled selected value> -- select an option -- </option>
-                {% for airport in airports %}
-                    <option value="{{airport.name}}">{{airport.name}}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="filter_item">
-            <label for="departure_city">Departure City</label><br>
-            <select name="departure_city" id="departure_city">
-                <option disabled selected value> -- select an option -- </option>
-                {% for city in cities %}
-                    <option value="{{city.city}}">{{city.city}}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="filter_item">
-            <label for="arrival_city">Arrival City</label><br>
-            <select name="arrival_city" id="arrival_city">
-                <option disabled selected value> -- select an option -- </option>
-                {% for city in cities %}
-                    <option value="{{city.city}}">{{city.city}}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="filter_item">
-            <label for="departure_date">Departure Date</label><br>
-            <input type="date" name="departure_date" id="departure_date">
-        </div>
-        <!-- <div>
-            <label for="return_date">Return Date</label><br>
-            <input type="date" name="return_date" id="return_date">
-        </div> -->
+  <div id="filter_bar">
+    <div class="filter_item">
+      <label for="departure">Departure Airport</label><br />
+      <select name="departure" id="departure">
+        <option disabled selected value>-- select an option --</option>
+        {% for airport in airports %}
+        <option value="{{airport.name}}">{{airport.name}}</option>
+        {% endfor %}
+      </select>
     </div>
-    <input type="submit" value="Search">
 
-{% if error %}
-<p class="error"><strong>Error:</strong> {{error}}</p>
-{% endif %}
+    <div class="filter_item">
+      <label for="arrival">Arrival Airport</label><br />
+      <select name="arrival" id="arrival">
+        <option disabled selected value>-- select an option --</option>
+        {% for airport in airports %}
+        <option value="{{airport.name}}">{{airport.name}}</option>
+        {% endfor %}
+      </select>
+    </div>
 
+    <div class="filter_item">
+      <label for="departure_city">Departure City</label><br />
+      <select name="departure_city" id="departure_city">
+        <option disabled selected value>-- select an option --</option>
+        {% for city in cities %}
+        <option value="{{city.city}}">{{city.city}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filter_item">
+      <label for="arrival_city">Arrival City</label><br />
+      <select name="arrival_city" id="arrival_city">
+        <option disabled selected value>-- select an option --</option>
+        {% for city in cities %}
+        <option value="{{city.city}}">{{city.city}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filter_item">
+      <label for="departure_date">Departure Date</label><br />
+      <input type="date" name="departure_date" id="departure_date" />
+    </div>
+    <div>
+      <label for="return_date">Return Date (If round trip)</label><br />
+      <input type="date" name="return_date" id="return_date" />
+    </div>
+  </div>
+  <input type="submit" value="Search" />
+
+  {% if error %}
+  <p class="error"><strong>Error:</strong> {{error}}</p>
+  {% endif %}
 </form>
-{% if flights %}
-{% if session.get('user_type') != 'customer' %}
-<p> <strong>Note: You must be logged in as a customer to book a flight.</strong> </p>
+{% if flights_to %} {% if session.get('user_type') != 'customer' %}
+<p>
+  <strong>Note: You must be logged in as a customer to book a flight.</strong>
+</p>
 {% endif %}
+<h3>Departure Flights</h3>
 <table>
-    <tr>
-        <th>Departure Airport</th>
-        <th>Arrival Airport</th>
-        <th>Departure Date</th>
-        <th>Arrival Date</th>
-        <th>Price</th>
-        {% if session.get('user_type') == 'customer' %}
-        <th>Book</th>
-        {% endif %}
-    </tr>
-    {% for flight in flights %}
-    <tr>
-        <td>{{flight.departure_airport}}</td>
-        <td>{{flight.arrival_airport}}</td>
-        <td>{{flight.departure_time}}</td>
-        <td>{{flight.arrival_time}}</td>
-        <td>${{flight.base_price}}</td>
-        {% if session.get('user_type') == 'customer' %}
-            <td><a href="">Book</a></td>
-        {% endif %}
-    </tr>
-    {% endfor %}
+  <tr>
+    <th>Departure Airport</th>
+    <th>Arrival Airport</th>
+    <th>Departure Time</th>
+    <th>Price</th>
+    {% if session.get('user_type') == 'customer' %}
+    <th>Book</th>
+    {% endif %}
+  </tr>
+  {% for flight in flights_to %}
+  <tr>
+    <td>{{flight.departure_airport}}</td>
+    <td>{{flight.arrival_airport}}</td>
+    <td>{{flight.departure_time}}</td>
+    <td>${{flight.base_price}}</td>
+    {% if session.get('user_type') == 'customer' %} 
+      {% if flight['seats_left'] > 0 %}
+        <td><a href="{{ url_for('book_flight', flight_num=flight.flight_num, departure_time=flight.departure_time, airline=flight.airline) }}">Book </a>({{flight['seats_left']}} seat(s) left)</td>
+      {% else %}
+        <th>Full</th>
+      {% endif %} 
+    {% endif %}
+  </tr>
+  {% endfor %}
 </table>
+{% endif %} {% if flights_back %} {% if session.get('user_type') != 'customer'%}
+<p>
+  <strong>Note: You must be logged in as a customer to book a flight.</strong>
+</p>
 {% endif %}
-{% endblock %}
+<h3>Return Flights</h3>
+<table>
+  <tr>
+    <th>Departure Airport</th>
+    <th>Arrival Airport</th>
+    <th>Departure Time</th>
+    <th>Price</th>
+    {% if session.get('user_type') == 'customer' %}
+    <th><a href="">Book</a></th>
+    {% endif %}
+  </tr>
+  {% for flight in flights_back %}
+  <tr>
+    <td>{{flight.departure_airport}}</td>
+    <td>{{flight.arrival_airport}}</td>
+    <td>{{flight.departure_time}}</td>
+    <td>${{flight.base_price}}</td>
+    {% if session.get('user_type') == 'customer' %} 
+      {% if flight['seats_left'] > 0 %}
+        <td><a href="{{ url_for('book_flight', flight_num=flight.flight_num, departure_time=flight.departure_time, airline=flight.airline) }}">Book </a>({{flight['seats_left']}} seat(s) left)</td>
+      {% else %}
+        <td>Full</td>
+      {% endif %} 
+    {% endif %}
+  </tr>
+  {% endfor %}
+</table>
+{% endif %} {% endblock %}

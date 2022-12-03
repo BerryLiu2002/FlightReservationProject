@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, session, url_for, redirect, jsonify, flash
 from sql_helper import *
 import _json
+from encrypt import encrypt_string
 #Initialize the app from Flask
 app = Flask(__name__)
+
 
 #Define a route to hello function
 @app.route('/')
@@ -50,7 +52,7 @@ def register():
             if status:
                 return render_template('register_customer.html', success='You have successfully registered!')
             else:
-                return render_template('register_customer.html', error='    ')
+                return render_template('register_customer.html', error='There was an error in registering, please try again!')
         else: # request.form.get('reg_type') == 'airlinestaff'
             status = check_register_airlinestaff(request.form)
             if status:
@@ -100,9 +102,15 @@ def future_flights():
     if request.method == 'GET':
         airports= get_airports()
         cities = get_airport_cities()
-        flights = filter_future_flights(request.args) if request.args else []
-        error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights else None
-        return render_template('future_flights.html', session=session, airports=airports, cities=cities, flights=flights, error=error)
+        flights_to = filter_future_flights(request.args) if request.args else []
+        if request.args.get('return_date'): # if return date is specified swap origin and destination, change departure date and run query again
+            ret_args = request.args.to_dict()
+            print(ret_args)
+            ret_args['departure_date'] = ret_args['return_date']
+            ret_args['arrival'], ret_args['departure'] = ret_args['departure'], ret_args['arrival']
+        flights_back = filter_future_flights(ret_args) if request.args.get('return_date') else []
+        error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
+        return render_template('future_flights.html', session=session, airports=airports, cities=cities, flights_to=flights_to, flights_back=flights_back, error=error)
 
 @app.route('/flight_status', methods=['GET'])
 def flight_status():
@@ -116,13 +124,29 @@ def flight_status():
             if error:
                 return render_template('flight_status.html', session=session, airlines=airlines, error=error)
             else:
-                return redirect(url_for('flight_details', flight=flight))
+                return redirect(url_for('flight_details', airline=flight['airline'], flight_num=flight['flight_num'], departure_time=flight['departure_time'], arrival_time=flight['arrival_time']))
 
-@app.route('/flight_details/<flight>', methods=['GET'])
-def flight_details(flight):
+@app.route('/flight_details/<airline>/<flight_num>/<departure_time>', methods=['GET'])
+def flight_details(airline, flight_num, departure_time):
     if request.method == 'GET':
-        # flight = get_flight_details(request.args.get('flight_id'))
+        flight = get_flight_details(airline, flight_num, departure_time)
+        print(flight)
         return render_template('flight_details.html', session=session, flight=flight)
+
+@app.route('/book/<flight_num>/<departure_time>/<airline>', methods=['GET', 'POST'])
+def book_flight(flight_num, departure_time, airline):
+    flight = get_flight_details(airline, flight_num, departure_time)
+    if request.method == 'GET':
+        return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline)
+    if request.method == 'POST':
+        if not session.get('username', None):
+            return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, error="You must be logged in as a customer to book a flight")
+        print(request.form)
+        success, message = book_flight_ticket(session.get('username'), flight_num, departure_time, airline, request.form)
+        if success:
+            return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, success=message)
+        else:
+            return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, error=message)
 
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000

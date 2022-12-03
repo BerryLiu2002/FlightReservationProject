@@ -3,5 +3,9 @@
     flex-direction: row;
     justify-content: left;
     align-items: center;
-    gap: 10px;
+    gap: 20px;
+}
+
+td, th {
+    padding:0 15px 0 15px;
 }
