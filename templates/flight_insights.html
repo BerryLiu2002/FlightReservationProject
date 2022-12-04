@@ -1,0 +1,38 @@
+{% extends 'base.html' %} 
+
+{% block body %}
+<h3>All customers on flight</h3>
+<table>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Phone Number</th>
+    </tr>
+    {% for customer in flight_customers %}
+    <tr>
+      <td>{{customer.name}}</td>
+      <td>{{customer.email}}</td>
+      <td>{{customer.phone_num}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+<h3>All ratings and comments for flight</h3>
+<table>
+    <tr>
+      <th>Customer Email</th>
+      <th>Rating</th>
+      <th>Comment</th>
+    </tr>
+    {% for review in all_reviews %}
+    <tr>
+      <td>{{review.customer_email}}</td>
+      <td>{{review.rating}}</td>
+      <td>{{review.comment}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+<h3> Avg. rating: {{avg_rating}}</h3>
+{% endblock %}
+
+
