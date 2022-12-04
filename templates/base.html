@@ -1,34 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css')}}"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')}}">
     {% block head %}{% endblock %}
-  </head>
-  <body>
+</head>
+<body>
     <div class="navbar">
-      <div class="left">
-        <div id="navlogo">
-          <a href="{{ url_for('home')}}">
-            <img
-              src="{{ url_for('static', filename='images/logo.png')}}"
-              alt="logo"
-            />
-          </a>
+        <div class="left">
+            <div id="navlogo">
+                <a href="{{ url_for('home')}}">
+                    <img src="{{ url_for('static', filename='images/logo.png')}}" alt="logo">
+                </a>
+            </div>
+            <div id="greeting">
+                {% if session.get('name') %}
+                    <p>Hello, {{session.get('name')}}</p>
+                {% else %}
+                    <p>Hello, Guest</p>
+                {% endif %}
+            </div>
         </div>
-<<<<<<< HEAD
-        <div id="greeting">
-          {% if session.get('name') %}
-          <p>Hello, {{session.get('name')}}</p>
-          {% else %}
-          <p>Hello, Guest</p>
-          {% endif %}
-=======
         <div class="right">
             <ul class="links">
                 {% if session.get('user_type') == "airlinestaff" %}
@@ -45,25 +39,11 @@
                 <li><a href="{{ url_for('login')}}">Login</a></li>
                 {% endif %}
             </ul>
->>>>>>> a6d3330e848761c3a0967191efdc15fe598a387a
         </div>
-      </div>
-      <div class="right">
-        <ul class="links">
-          <!-- Search for Flights -->
-          <li><a href="{{url_for('future_flights')}}">Future Flights</a></li>
-          <!-- Flight Status -->
-          <li><a href="{{url_for('flight_status')}}">Flight Status</a></li>
-          <!-- Login/Logout -->
-          {% if session.get('name') %}
-          <li><a href="{{ url_for('logout')}}">Logout</a></li>
-          {% else %}
-          <li><a href="{{ url_for('login')}}">Login</a></li>
-          {% endif %}
-        </ul>
-      </div>
     </div>
 
-    <div class="content">{% block body %}{% endblock %}</div>
-  </body>
+    <div class="content">
+        {% block body %}{% endblock %}
+    </div>  
+</body>
 </html>

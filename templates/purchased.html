@@ -1,65 +1,12 @@
-{% extends 'base.html' %} {% block body %} {%if past_flights%}
-<h2>Here are your past flights</h2>
-<form action="{{ url_for('rate')}}" method="GET">
-  <table style="width: 100%">
-    <tr>
-      <th>Flight Number</th>
-      <th>Airline</th>
-      <th>Airplane ID</th>
-      <th>Departure Airport</th>
-      <th>Arrival Airport</th>
-      <th>Departure Time</th>
-      <th>Arrival Time</th>
-    </tr>
-    {% for flight in past_flights %}
-    <tr style="text-align: center">
-      <td>{{flight.get('flight_num')}}</td>
-      <td>{{flight.get('airline')}}</td>
-      <td>{{flight.get('airplane_id')}}</td>
-      <td>{{flight.get('departure_airport')}}</td>
-      <td>{{flight.get('arrival_airport')}}</td>
-      <td>{{flight.get('departure_time')}}</td>
-      <td>{{flight.get('arrival_time')}}</td>
-      <td>
-        <a href="{{ url_for('form', flight_num=flight.flight_num) }}"
-          >Rate Flight</a
-        >
-      </td>
-    </tr>
-  </table>
-</form>
-{% endfor %} {%else%}
-<h2>You do not have any past flights</h2>
-{%endif%} {%if future_flights%}
-<h2>Here are your future flights:</h2>
+{% extends 'base.html' %} 
+
+{% block body %}
+{% for flight in data %}
 <form action="{{ url_for('cancel_trip') }}" method="POST">
-  <table style="width: 100%">
-    <tr>
-      <th>Flight Number</th>
-      <th>Airline</th>
-      <th>Airplane ID</th>
-      <th>Departure Airport</th>
-      <th>Arrival Airport</th>
-      <th>Departure Time</th>
-      <th>Arrival Time</th>
-    </tr>
-    {%for flight in future_flights%}
-    <tr style="text-align: center">
-      <td>{{flight.get('flight_num')}}</td>
-      <td>{{flight.get('airline')}}</td>
-      <td>{{flight.get('airplane_id')}}</td>
-      <td>{{flight.get('departure_airport')}}</td>
-      <td>{{flight.get('arrival_airport')}}</td>
-      <td>{{flight.get('departure_time')}}</td>
-      <td>{{flight.get('arrival_time')}}</td>
-      <td>
-        <button type="submit">Cancel Flight</button>
-        <input type="hidden" name="id" value="{{flight['id']}}" />
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
+  <li>{{flight}}
+    <button type="submit">Cancel Flight</button>
+  </li>
+  <input type="hidden" name="id" value="{{flight['id']}}">
 </form>
-{%else%}
-<h2>You have no upcoming flights</h2>
-{%endif%} {% endblock %}
+{% endfor %}
+{% endblock %}

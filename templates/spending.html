@@ -1,17 +1,5 @@
-{% extends 'base.html' %} {% block body %}
+{% extends 'base.html' %} 
 
-<table style="width: 100%; text-align: center">
-  <tr>
-    <th>Year</th>
-    <th>Month</th>
-    <th>Spent</th>
-  </tr>
-  {% for expense in data %}
-  <tr>
-    <td>{{expense.get('Year')}}</td>
-    <td>{{expense.get('Month')}}</td>
-    <td>{{expense.get('Spent')}}</td>
-  </tr>
-</table>
-
-{% endfor %} {% endblock %}
+{% block body %}
+  <h2 style="text-align: center;">Your total spending is : {{data[0]['sum(sold_price)']}}</h2>
+{% endblock %}

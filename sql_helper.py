@@ -86,14 +86,8 @@ def check_register_airlinestaff(data):
         print('Error: ', e)
         return False
 
-def get_future_flights(email):
-    query = "SELECT * FROM Flights NATURAL JOIN Tickets as F WHERE F.customer_email = %s and F.departure_time >= now() + INTERVAL 1 DAY;"
-    cursor.execute(query, email)
-    data = cursor.fetchall()
-    return data
-
-def get_past_flights(email):
-    query = "SELECT * FROM Flights NATURAL JOIN Tickets as F WHERE F.customer_email = %s and F.departure_time < now() + INTERVAL 1 DAY;"
+def get_flights(email):
+    query = "SELECT * FROM TICKETS WHERE customer_email = %s"
     cursor.execute(query, email)
     data = cursor.fetchall()
     return data
@@ -115,6 +109,21 @@ def make_review(rating, comment, email, flight_num):
         return False
     
 def cancel_flight(id):
+    # need to update queries b/c flight id is not enough
+    query = "DELETE FROM TICKETS WHERE id = %s"
+    try:
+        cursor.execute(query, id)
+        conn.commit()
+        # print('number of rows deleted', cursor.rowcount, id)
+        return True
+    except pymysql.err.IntegrityError as e:
+        print('Error: ', e)
+        return False
+
+    return data
+    
+
+def cancel_flight(id):
     query = "DELETE FROM TICKETS WHERE id = %s"
     try:
         cursor.execute(query, id)
@@ -125,7 +134,7 @@ def cancel_flight(id):
         print('Error: ', e)
         return False
 def get_spending(email):
-    query = "SELECT YEAR(f.departure_time) as Year, MONTHNAME(f.departure_time) as Month, CAST(SUM(f.sold_price) AS SIGNED) as Spent  FROM `Flights` NATURAL JOIN TICKETS as f WHERE f.customer_email = %s GROUP by f.departure_time"
+    query = "select sum(sold_price) from flights natural join tickets where customer_email = %s"
     cursor.execute(query, email)
     data = cursor.fetchall()
     return data
