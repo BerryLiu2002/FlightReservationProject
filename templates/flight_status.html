@@ -1,9 +1,10 @@
-{% extends 'base.html' %} {% block head %}
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/flight_search.css')}}"
-/>
-{% endblock %} {% block body %}
+{% extends 'base.html' %} 
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/flight_search.css')}}"/>
+{% endblock %} 
+
+{% block body %}
 <form action="{{ url_for('flight_status') }}" method="GET">
   <div id="filter_bar">
     <div class="filter_item">

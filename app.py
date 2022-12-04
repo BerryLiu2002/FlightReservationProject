@@ -63,15 +63,15 @@ def register():
 @app.route('/purchased', methods=['GET', 'POST'])
 def purchased_flights():
     if request.method == 'GET':
-        data = get_future_flights(session.get('username'))
-        data2 = get_past_flights(session.get('username'))
-        return render_template('purchased.html', future_flights=data, session=session, past_flights = data2)
+        data = get_flights(session.get('username'))
+        # print(data[0]['id'])
+        return render_template('purchased.html', data=data, session=session)
 
 @app.route('/cancel', methods=['POST'])
 def cancel_trip():
     id = request.form.get('id')
     if cancel_flight(id):
-        data = get_future_flights(session.get('username'))
+        data = get_flights(session.get('username'))
         print(data)
         return redirect('/purchased')
 
