@@ -21,35 +21,21 @@
             />
           </a>
         </div>
-<<<<<<< HEAD
         <div id="greeting">
           {% if session.get('name') %}
           <p>Hello, {{session.get('name')}}</p>
           {% else %}
           <p>Hello, Guest</p>
           {% endif %}
-=======
-        <div class="right">
-            <ul class="links">
-                {% if session.get('user_type') == "airlinestaff" %}
-                <li><a href="{{url_for('view_flight_staff')}}"> Staff View Flight</a></li>
-                {% endif %}
-                <!-- Search for Flights -->
-                <li><a href="{{url_for('future_flights')}}">Future Flights</a></li>
-                <!-- Flight Status -->
-                <li><a href="{{url_for('flight_status')}}">Flight Status</a></li>
-                <!-- Login/Logout -->
-                {% if session.get('name') %}
-                <li><a href="{{ url_for('logout')}}">Logout</a></li>
-                {% else %}
-                <li><a href="{{ url_for('login')}}">Login</a></li>
-                {% endif %}
-            </ul>
->>>>>>> a6d3330e848761c3a0967191efdc15fe598a387a
         </div>
       </div>
       <div class="right">
         <ul class="links">
+          {% if session.get('user_type') == "airlinestaff" %}
+          <li>
+            <a href="{{url_for('view_flight_staff')}}"> Staff View Flight</a>
+          </li>
+          {% endif %}
           <!-- Search for Flights -->
           <li><a href="{{url_for('future_flights')}}">Future Flights</a></li>
           <!-- Flight Status -->
