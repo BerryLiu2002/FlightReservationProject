@@ -1,10 +1,9 @@
-{% extends 'base.html' %} 
-
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/flight_search.css')}}"/>
-{% endblock %} 
-
-{% block body %}
+{% extends 'base.html' %} {% block head %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/flight_search.css')}}"
+/>
+{% endblock %} {% block body %}
 <form action="{{ url_for('future_flights') }}" method="GET">
   <div id="filter_bar">
     <div class="filter_item">
@@ -84,13 +83,17 @@
     <td>{{flight.arrival_airport}}</td>
     <td>{{flight.departure_time}}</td>
     <td>${{flight.base_price}}</td>
-    {% if session.get('user_type') == 'customer' %} 
-      {% if flight['seats_left'] > 0 %}
-        <td><a href="{{ url_for('book_flight', flight_num=flight.flight_num, departure_time=flight.departure_time, airline=flight.airline) }}">Book </a>({{flight['seats_left']}} seat(s) left)</td>
-      {% else %}
-        <th>Full</th>
-      {% endif %} 
-    {% endif %}
+    {% if session.get('user_type') == 'customer' %} {% if flight['seats_left'] >
+    0 %}
+    <td>
+      <a
+        href="{{ url_for('book_flight', flight_num=flight.flight_num, departure_time=flight.departure_time, airline=flight.airline) }}"
+        >Book </a
+      >({{flight['seats_left']}} seat(s) left)
+    </td>
+    {% else %}
+    <th>Full</th>
+    {% endif %} {% endif %}
   </tr>
   {% endfor %}
 </table>
@@ -116,13 +119,17 @@
     <td>{{flight.arrival_airport}}</td>
     <td>{{flight.departure_time}}</td>
     <td>${{flight.base_price}}</td>
-    {% if session.get('user_type') == 'customer' %} 
-      {% if flight['seats_left'] > 0 %}
-        <td><a href="{{ url_for('book_flight', flight_num=flight.flight_num, departure_time=flight.departure_time, airline=flight.airline) }}">Book </a>({{flight['seats_left']}} seat(s) left)</td>
-      {% else %}
-        <td>Full</td>
-      {% endif %} 
-    {% endif %}
+    {% if session.get('user_type') == 'customer' %} {% if flight['seats_left'] >
+    0 %}
+    <td>
+      <a
+        href="{{ url_for('book_flight', flight_num=flight.flight_num, departure_time=flight.departure_time, airline=flight.airline) }}"
+        >Book </a
+      >({{flight['seats_left']}} seat(s) left)
+    </td>
+    {% else %}
+    <td>Full</td>
+    {% endif %} {% endif %}
   </tr>
   {% endfor %}
 </table>

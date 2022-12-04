@@ -1,49 +1,113 @@
-{% extends 'base.html' %} 
-
-{% block head %}
-{% endblock %}
-
-{% block navlinks %}
+{% extends 'base.html' %} {% block head %} {% endblock %} {% block navlinks %}
 <li><a href="{{url_for}}">Search for Flights</a></li>
 <li><a href="{{ url_for('login')}}">Login</a></li>
-{% endblock %}
+{% endblock %} {% block body %}
+<h1>Customer Registration</h1>
+<div class="login">
+  <div class="registration-form">
+    <form action="{{ url_for('register') }}" method="POST">
+      <div>
+        <input type="hidden" name="reg_type" value="customer" />
+        <label for="name">Full Name</label><br />
+        <input
+          type="text"
+          name="name"
+          id="name"
+          placeholder="Enter your full name"
+          required="true"
+        /><br />
+        <label for="email">Email</label><br />
+        <input
+          type="text"
+          name="email"
+          id="email"
+          placeholder="Enter your email"
+          required="true"
+        /><br />
+        <label for="password">Password</label><br />
+        <input
+          type="password"
+          name="password"
+          id="password"
+          placeholder="Enter your password"
+          required="true"
+        /><br />
+        <label for="address">Address</label><br />
+        <input
+          type="text"
+          name="building_num"
+          id="building_num"
+          placeholder="Enter your building number"
+          required="true"
+        /><br />
+        <input
+          type="text"
+          name="street"
+          id="street"
+          placeholder="Enter your street"
+          required="true"
+        /><br />
+        <input
+          type="text"
+          name="city"
+          id="city"
+          placeholder="Enter your city"
+          required="true"
+        /><br />
+        <input
+          type="text"
+          name="state"
+          id="state"
+          placeholder="Enter your state"
+          required="true"
+        /><br />
+        <label for="phone">Phone Number</label><br />
+        <input
+          type="text"
+          name="phone"
+          id="phone"
+          placeholder="Enter your phone number"
+          required="true"
+        /><br />
+        <label for="passport">Passport</label><br />
+        <input
+          type="text"
+          name="passport_num"
+          id="passport"
+          placeholder="Enter your passport number"
+          required="true"
+        /><br />
+        <input
+          type="date"
+          name="passport_exp"
+          id="passport_exp"
+          placeholder="Enter your passport expiration date"
+          required="true"
+        /><br />
+        <input
+          type="text"
+          name="passport_country"
+          id="passport_country"
+          placeholder="Enter your passport country"
+          required="true"
+        /><br />
+        <label for="date_of_birth">Date of Birth</label><br />
+        <input
+          type="date"
+          name="date_of_birth"
+          id="date_of_birth"
+          placeholder="Enter your date of birth"
+          required="true"
+        /><br />
+      </div>
+      <input type="submit" value="Register" />
 
-{% block body %}
-    <h1>Customer Registration</h1>
-    <div class="login">
-        <div class="registration-form">
-            <form action="{{ url_for('register') }}" method="POST">
-                <div>
-                    <input type="hidden" name="reg_type" value="customer">
-                    <label for="name">Full Name</label><br>
-                    <input type="text" name="name" id="name" placeholder="Enter your full name" required="true"><br>
-                    <label for="email">Email</label><br>
-                    <input type="text" name="email" id="email" placeholder="Enter your email" required="true"><br>
-                    <label for="password">Password</label><br>
-                    <input type="password" name="password" id="password" placeholder="Enter your password" required="true"><br>
-                    <label for="address">Address</label><br>
-                    <input type="text" name="building_num" id="building_num" placeholder="Enter your building number" required="true"><br>
-                    <input type="text" name="street" id="street" placeholder="Enter your street" required="true"><br>
-                    <input type="text" name="city" id="city" placeholder="Enter your city" required="true"><br>
-                    <input type="text" name="state" id="state" placeholder="Enter your state" required="true"><br>
-                    <label for="phone">Phone Number</label><br>
-                    <input type="text" name="phone" id="phone" placeholder="Enter your phone number" required="true"><br>
-                    <label for="passport">Passport</label><br>
-                    <input type="text" name="passport_num" id="passport" placeholder="Enter your passport number" required="true"><br>
-                    <input type="date" name="passport_exp" id="passport_exp" placeholder="Enter your passport expiration date" required="true"><br>
-                    <input type="text" name="passport_country" id="passport_country" placeholder="Enter your passport country" required="true"><br>
-                    <label for="date_of_birth">Date of Birth</label><br>
-                    <input type="date" name="date_of_birth" id="date_of_birth" placeholder="Enter your date of birth" required="true"><br>
-                </div>
-                    <input type="submit" value="Register">
-                
-                {% if error %}
-		            <p class="error"><strong>Error:</strong> {{error}}</p>
-	            {% endif %}
-                {% if success %}
-                    <p class="success"><strong>Success:</strong> {{success}}</p>
-                {% endif %}
-            </form>
-        </div>
-    </div>
+      {% if error %}
+      <p class="error"><strong>Error:</strong> {{error}}</p>
+      {% endif %} {% if success %}
+      <p class="success"><strong>Success:</strong> {{success}}</p>
+      {% endif %}
+    </form>
+  </div>
+</div>
 {% endblock %}
