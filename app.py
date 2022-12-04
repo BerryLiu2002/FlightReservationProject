@@ -150,6 +150,26 @@ def book_flight(flight_num, departure_time, airline):
         else:
             return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, error=message)
 
+@app.route('/view_flight_staff', methods=['GET'])
+def view_flight_staff():
+    if request.method == 'GET':
+        airline = get_staff_airline(session.get('username'))
+        airports= get_airports()
+        cities = get_airport_cities()
+        flights_to = view_all_flights_staff(request.args, airline) if request.args else []
+        error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
+    return render_template('view_flight_staff.html', session=session, airline = airline, airports=airports, cities=cities, flights_to=flights_to, error=error)
+
+@app.route('/view_flight_staff/flight_insights/<airline>/<flight_num>/<departure_time>', methods=['GET'])
+def flight_insights(airline, flight_num, departure_time):
+    flight_customers = view_all_customers_staff(airline, flight_num, departure_time)
+    all_reviews = view_ratings_comments(airline, flight_num, departure_time)
+    avg_rating = view_avg_rating(airline, flight_num, departure_time)
+    return render_template('flight_insights.html', session = session, flight_customers = flight_customers, all_reviews = all_reviews, avg_rating = avg_rating['Average rating'])
+
+@app.route('/view_reports', methods=['GET'])
+def view_reports():
+    pass 
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask

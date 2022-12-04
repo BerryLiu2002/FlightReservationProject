@@ -188,6 +188,12 @@ def get_airlines():
     data = cursor.fetchall()
     return data
 
+def get_staff_airline(username):
+    query = 'SELECT works_at FROM airlinestaff WHERE username = %s'
+    cursor.execute(query, username)
+    data = cursor.fetchone()
+    return data['works_at']
+
 def filter_status_flights(args):
     inputs = ()
     sql = "SELECT * FROM Flights WHERE airline = %s AND flight_num = %s AND departure_time = %s"
@@ -210,34 +216,68 @@ def get_flight_details(airline, flight_num, departure_time):
     data['arrival_time'] = data['arrival_time'].strftime("%m/%d/%Y %I:%M %p")
     return data
 
-def view_all_flights_staff(data):
-    airline = data.get('airline')
-    departure_time = data.get('departure_time')
-    departure_airport = data.get('departure_airport')
-    arrival_airport = data.get('arrival_airport')
-    query = """SELECT * FROM flights, airplanes 
-            WHERE airplanes.airline = %s 
-            AND flights.departure_time > %s AND flights.departure_time < %s 
-            AND flights.departure_airport = %s AND flights.arrival_airport = %s"""
-    cursor.execute(query, (airline, departure_time, departure_time, departure_airport, arrival_airport))
+def view_all_flights_staff(args, airline):
+    inputs = (airline,)
+    sql = "SELECT * FROM Flights WHERE airline = %s "
+    condition_list = []
+    if args.get('departure'):
+        condition_list.append("departure_airport = %s")
+        inputs += (args.get('departure'),)
+    if args.get('arrival'):
+        condition_list.append("arrival_airport = %s")
+        inputs += (args.get('arrival'),)
+    if args.get('departure_city'):
+        condition_list.append("departure_airport IN (SELECT name FROM airports WHERE city = %s)")
+        inputs += (args.get('departure_city'),)
+    if args.get('arrival_city'):
+        condition_list.append("arrival_airport IN (SELECT name FROM airports WHERE city = %s)")
+        inputs += (args.get('arrival_city'),)
+    if args.get('from_date'):
+        condition_list.append("DATE(departure_time) > %s")
+        inputs += (args.get('from_date'),)
+    if args.get('to_date'):
+        condition_list.append("DATE(departure_time) < %s")
+        inputs += (args.get('to_date'),)  
+    if args.get('flight_num'):
+        condition_list.append("flight_num = %s")
+        inputs += (args.get('flight_num'),)
+    if not condition_list:
+        condition_list.append("DATE(departure_time) > CURDATE()")
+        condition_list.append("DATE(departure_time) < (CURDATE() + INTERVAL 30 DAY)")
+    sql += " AND " + " AND ".join(condition_list)
+    print(sql)
+    cursor.execute(sql, inputs)
     data = cursor.fetchall()
     return data
 
-def view_all_customers_staff(data):
-    flight_num = data.get('flight_num')
-    query = 'SELECT name FROM customers INNER JOIN tickets ON customers.email = tickets.customer_email WHERE tickets.flight_num = %s;'
-    cursor.execute(query, (flight_num))
+def view_all_customers_staff(airline, flight_num, departure_time):
+    query = """SELECT name, email, phone_num FROM customers INNER JOIN tickets ON customers.email = tickets.customer_email 
+            WHERE tickets.airline = %s
+            AND tickets.flight_num = %s
+            AND tickets.departure_time = %s
+    """
+    cursor.execute(query, (airline, flight_num, departure_time))
     data = cursor.fetchall()
     return data
 
-def view_ratings_comments(data): # How to fetch data from 2 queires
-    flight_num = data.get('flight_num')
-    query = "SELECT avg(rating) AS 'Average rating' FROM reviews \
-            WHERE flight_num = %s;"
-    query = "SELECT rating, comment FROM reviews \
-            WHERE flight_num = %s;"
-    cursor.execute(query, (flight_num))
+def view_ratings_comments(airline, flight_num, departure_time):
+    query = """SELECT reviews.customer_email, reviews.rating, reviews.comment 
+            FROM reviews INNER JOIN flights ON reviews.flight_num = flights.flight_num
+            WHERE flights.airline = %s
+            AND flights.flight_num = %s
+            AND flights.departure_time = %s"""
+    cursor.execute(query, (airline, flight_num, departure_time))
     data = cursor.fetchall()
+    return data
+
+def view_avg_rating(airline, flight_num, departure_time):
+    query = """SELECT avg(reviews.rating) AS 'Average rating'
+            FROM reviews INNER JOIN flights ON reviews.flight_num = flights.flight_num
+            WHERE flights.airline = %s
+            AND flights.flight_num = %s
+            AND flights.departure_time = %s"""
+    cursor.execute(query, (airline, flight_num, departure_time))
+    data = cursor.fetchone()
     return data
 
 def view_freq_customer(data):
