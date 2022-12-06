@@ -65,7 +65,15 @@ def purchased_flights():
     if request.method == 'GET':
         data = get_future_flights(session.get('username'))
         data2 = get_past_flights(session.get('username'))
-        return render_template('purchased.html', future_flights=data, session=session, past_flights = data2)
+        airports = get_airports()
+        return render_template('purchased.html', future_flights=data, airports = airports, session=session, past_flights = data2, default = False)
+
+@app.route('/filtered-flights', methods = ['GET'])
+def get_filtered():
+    if request.method == 'GET':
+        data = get_filtered_flights(session.get('username'),request.args.to_dict())
+        return render_template('purchased.html', future_flights= data, session=session, default = True)
+
 
 @app.route('/cancel', methods=['POST'])
 def cancel_trip():
