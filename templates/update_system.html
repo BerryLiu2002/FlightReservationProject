@@ -1,0 +1,115 @@
+{% extends 'base.html' %} 
+
+{% block body %}
+<h3>Create new flight</h3>
+<form action="{{ url_for('update_system') }}" method="POST">
+    <div class="filter_item">
+        <label for="airplane_id">Airplane ID</label><br />
+        <input type="text" name="airplane_id" id="airplane_id" required="true"/>
+    </div>
+
+    <div class="filter_item">
+        <label for="base_price">Base Price</label><br />
+        <input type="text" name="base_price" id="base_price" required="true"/>
+    </div>
+
+    <div id="filter_bar">
+        <div class="filter_item">
+          <label for="status">Status</label><br />
+          <select name="status" id="status" required="true">
+            <option value="">-- select an option --</option>
+            <option value="on-time">on-time</option>
+            <option value="delayed">delayed</option>
+          </select>
+        </div>
+
+    <div id="filter_bar">
+      <div class="filter_item">
+        <label for="departure_airport">Departure Airport</label><br />
+        <select name="departure_airport" id="departure_airport" required="true">
+          <option value="">-- select an option --</option>
+          {% for airport in airports %}
+          <option value="{{airport.name}}">{{airport.name}}</option>
+          {% endfor %}
+        </select>
+      </div>
+  
+      <div class="filter_item">
+        <label for="arrival_airport">Arrival Airport</label><br />
+        <select name="arrival_airport" id="arrival_airport" required="true">
+          <option value="">-- select an option --</option>
+          {% for airport in airports %}
+          <option value="{{airport.name}}">{{airport.name}}</option>
+          {% endfor %}
+        </select>
+      </div>
+  
+      <div class="filter_item">
+        <label for="departure_time">Departure Time</label><br />
+        <input type="datetime-local" name="departure_time" id="departure_time" required="true"/>
+      </div>
+    </div>
+
+    <div class="filter_item">
+        <label for="arrival_time">Arrival Time</label><br />
+        <input type="datetime-local" name="arrival_time" id="arrival_time" required="true"/>
+      </div>
+    </div>
+    <input type="submit" value="Create flight" />
+</form>
+
+<h3>Add new airplane</h3>
+<form action="{{ url_for('update_system') }}" method="POST">
+    <div class="filter_item">
+        <label for="num_seats">Number of seats</label><br />
+        <input type="text" name="num_seats" id="num_seats" required="true"/>
+    </div>
+
+    <div class="filter_item">
+      <label for="manufacturing_company">Manufacturing Company</label><br />
+      <input type="text" name="manufacturing_company" id="manufacturing_company" required="true"/>
+  </div>
+
+    <div class="filter_item">
+      <label for="age">Airplane age</label><br />
+      <input type="text" name="age" id="age" required="true"/>
+  </div>
+    <input type="submit" value="Add airplane" />
+    <a href="{{url_for('view_airplanes')}}">View all airplanes operated by airline</a>
+</form>
+
+<h3>Add new airport</h3>
+<form action="{{ url_for('update_system') }}" method="POST">
+    <div class="filter_item">
+        <label for="name">Airport Name</label><br />
+        <input type="text" name="name" id="name" required="true"/>
+    </div>
+
+    <div class="filter_item">
+      <label for="city">City</label><br />
+      <input type="text" name="city" id="city" required="true"/>
+  </div>
+
+    <div class="filter_item">
+      <label for="country">Country</label><br />
+      <input type="text" name="country" id="country" required="true"/>
+  </div>
+  <div id="filter_bar">
+    <div class="filter_item">
+      <label for="type">Airport type</label><br />
+      <select name="type" id="type" required="true">
+        <option value="">-- select an option --</option>
+        <option value="international">International</option>
+        <option value="domestic">Domestic</option>
+      </select>
+    </div>
+    <input type="submit" value="Add airport"/>
+</form>
+{% if error %}
+<p class="error"><strong>Error:</strong> {{error}}</p>
+{% endif %}
+{% if success %}
+    <p class="success"><strong>Success:</strong> {{success}}</p>
+{% endif %}
+
+{% endblock %}
