@@ -1,0 +1,22 @@
+{% extends 'base.html' %} 
+
+{% block body %}
+<h3>All airplanes operated by {{airline}}</h3>
+<table>
+    <tr>
+      <th>Plane ID</th>
+      <th>Number of seats</th>
+      <th>Manufacturing Company</th>
+      <th>Age</th>
+    </tr>
+    {% for plane in all_airplanes %}
+    <tr>
+      <td>{{plane.id}}</td>
+      <td>{{plane.num_seats}}</td>
+      <td>{{plane.manufacturing_company}}</td>
+      <td>{{plane.age}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+{% endblock %} 
