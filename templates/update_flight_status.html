@@ -1,0 +1,22 @@
+{% extends 'base.html' %} 
+
+{% block body %}
+<form action="{{ url_for('update_flight_status') }}" method="POST">
+    <div id="filter_bar">
+      <div class="filter_item">
+        <label for="status">Update Status</label><br />
+        <select name="status" id="status">
+          <option disabled selected value>Current Status: {{status}}</option>
+          <option value="on-time">on-time</option>
+          <option value="delayed">delayed</option>
+        </select>
+      </div>
+<input type="submit" value="Update" />
+{% if error %}
+<p class="error"><strong>Error:</strong> {{error}}</p>
+{% endif %}
+{% if success %}
+    <p class="success"><strong>Success:</strong> {{success}}</p>
+{% endif %}
+
+{% endblock %}

@@ -35,6 +35,8 @@
           <li>
             <a href="{{url_for('view_flight_staff')}}"> Staff View Flight</a>
           </li>
+          <li><a href="{{url_for('view_reports')}}"> View Reports</a></li>
+          <li><a href="{{url_for('update_system')}}"> Update System</a></li>
           {% endif %}
           <!-- Search for Flights -->
           <li><a href="{{url_for('future_flights')}}">Future Flights</a></li>
@@ -50,6 +52,10 @@
       </div>
     </div>
 
-    <div class="content">{% block body %}{% endblock %}</div>
+    <div class="content">
+      {% block body %} {% if error %}
+      <p class="error"><strong>Error:</strong> {{error}}</p>
+      {% endif %} {% endblock %}
+    </div>
   </body>
 </html>

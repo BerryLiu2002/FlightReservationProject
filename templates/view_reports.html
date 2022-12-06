@@ -1,0 +1,46 @@
+{% extends 'base.html' %} 
+
+{% block body %}
+    <h3>Most frequent customer within the last year</h3> 
+    <table>
+        <tr>
+          <th>Customer Name</th>
+          <th>Customer Email</th>
+        </tr>
+
+        <tr>
+          <td>{{most_freq_name}}</td>
+          <td>{{most_freq_email}}</td>
+          <td><a href="{{url_for('view_reports')}}">View all flights from {{most_freq_name}}</a></td>
+        </tr>
+      </table>
+
+      <h3>Tickets sold report</h3>
+      <form action="{{ url_for('view_reports') }}" method="GET">
+        <div id="filter_bar">
+        <div class="filter_item">
+            <label for="sold_from_date">Number of tickets sold from</label><br />
+            <input type="date" name="sold_from_date" id="sold_from_date" />
+          </div>
+          <div>
+            <label for="sold_to_date">Number of tickets sold to</label><br />
+            <input type="date" name="sold_to_date" id="sold_to_date" />
+          </div>
+        </div>
+        <input type="submit" value="See Report" />
+        </form>
+      <h3>Tickets revenue report</h3> 
+      <form action="{{ url_for('view_reports') }}" method="GET" >
+        <div id="filter_bar">
+        <div class="filter_item">
+            <label for="revenue_from_date">Revenue from</label><br />
+            <input type="date" name="revenue_from_date" id="revenue_from_date" />
+          </div>
+          <div>
+            <label for="revenue_to_date">Revenue to</label><br />
+            <input type="date" name="revenue_to_date" id="revenue_to_date" />
+          </div>
+        </div>
+        <input type="submit" value="See Report" />
+        </form>
+{% endblock %}

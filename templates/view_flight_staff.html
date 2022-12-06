@@ -70,7 +70,7 @@
   <p class="error"><strong>Error:</strong> {{error}}</p>
   {% endif %}
 </form>
-
+{% if flights_to %}
 <h3>All Results</h3>
 <table>
   <tr>
@@ -79,9 +79,7 @@
     <th>Departure Date</th>
     <th>Arrival Date</th>
     <th>Flight Number</th>
-    {% if session.get('user_type') == 'customer' %}
-    <th>Book</th>
-    {% endif %}
+    <th>Flight Status</th>
   </tr>
   {% for flight in flights_to %}
   <tr>
@@ -90,8 +88,38 @@
     <td>{{flight.departure_time}}</td>
     <td>{{flight.arrival_time}}</td>
     <td>{{flight.flight_num}}</td>
+    <td>{{flight.status}}</td>
+    <td>
+      <form action="{{ url_for('view_flight_staff') }}" method="POST">
+        <div id="filter_bar">
+          <div class="filter_item">
+            <label for="status">Update Flight Status</label><br />
+            <select name="status" id="status">
+              <option disabled selected value>-- select an option --</option>
+              {% if flight.status == 'on-time' %}             
+              <option value="delayed">delayed</option>
+              {% endif %}
+              {% if flight.status == 'delayed' %}             
+              <option value="on-time">on-time</option>
+              {% endif %}
+            </select>
+          </div>
+        <input type ="hidden" name="flight_num" value={{flight.flight_num}} />
+        <input type ="hidden" name="departure_time" value={{flight.departure_time}} />
+        <input type ="hidden" name="airline" value={{airline}} />
+        <input type="submit" value="Update" />
+    </td>
     <td><a href="{{url_for('flight_insights', airline = airline, flight_num = flight.flight_num, departure_time = flight.departure_time)}}">View Flight Details</a></td>
+
   </tr>
   {% endfor %}
 </table>
+{% endif %}
+{% if update_error %}
+  <p class="error"><strong>Error:</strong> {{update_error}}</p>
+{% endif %}
+
+{% if update_success %}
+  <p class="success"><strong>Success:</strong> {{update_success}}</p>
+{% endif %}
 {% endblock %}
