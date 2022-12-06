@@ -65,13 +65,21 @@ def purchased_flights():
     if request.method == 'GET':
         data = get_future_flights(session.get('username'))
         data2 = get_past_flights(session.get('username'))
-        return render_template('purchased.html', future_flights=data, session=session, past_flights = data2)
+        airports = get_airports()
+        return render_template('purchased.html', future_flights=data, airports = airports, session=session, past_flights = data2, default = False)
+
+@app.route('/filtered-flights', methods = ['GET'])
+def get_filtered():
+    if request.method == 'GET':
+        data = get_filtered_flights(session.get('username'),request.args.to_dict())
+        return render_template('purchased.html', future_flights= data, session=session, default = True)
+
 
 @app.route('/cancel', methods=['POST'])
 def cancel_trip():
     id = request.form.get('id')
     if cancel_flight(id):
-        data = get_future_flights(session.get('username'))
+        data = get_flights(session.get('username'))
         print(data)
         return redirect('/purchased')
 
@@ -150,26 +158,95 @@ def book_flight(flight_num, departure_time, airline):
         else:
             return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, error=message)
 
-@app.route('/view_flight_staff', methods=['GET'])
+@app.route('/view_flight_staff', methods=['GET', 'POST'])
 def view_flight_staff():
     if request.method == 'GET':
+        if session.get('user_type') != 'airlinestaff':
+            error = "Only an airline staff can access this page"
+            return render_template('base.html', session=session, error=error)        
         airline = get_staff_airline(session.get('username'))
         airports= get_airports()
         cities = get_airport_cities()
         flights_to = view_all_flights_staff(request.args, airline) if request.args else []
         error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
-    return render_template('view_flight_staff.html', session=session, airline = airline, airports=airports, cities=cities, flights_to=flights_to, error=error)
+        return render_template('view_flight_staff.html', session=session, airline = airline, airports=airports, cities=cities, flights_to=flights_to, error=error)
+    if request.method == 'POST':
+        update_status = change_flight_status(request.form)
+        if update_status[0]:
+            return render_template('view_flight_staff.html', session = session, update_success = update_status[1])
+        else:
+            return render_template('view_flight_staff.html', session = session, update_error = "There's a problem with changing flight status")
+
 
 @app.route('/view_flight_staff/flight_insights/<airline>/<flight_num>/<departure_time>', methods=['GET'])
 def flight_insights(airline, flight_num, departure_time):
-    flight_customers = view_all_customers_staff(airline, flight_num, departure_time)
-    all_reviews = view_ratings_comments(airline, flight_num, departure_time)
-    avg_rating = view_avg_rating(airline, flight_num, departure_time)
-    return render_template('flight_insights.html', session = session, flight_customers = flight_customers, all_reviews = all_reviews, avg_rating = avg_rating['Average rating'])
-
+    if request.method == 'GET':
+        if session.get('user_type') != 'airlinestaff':
+            error = "Only an airline staff can access this page"
+            return render_template('base.html', session=session, error=error)       
+        flight_customers = view_all_customers_staff(airline, flight_num, departure_time)
+        all_reviews = view_ratings_comments(airline, flight_num, departure_time)
+        avg_rating = view_avg_rating(airline, flight_num, departure_time)
+        return render_template('flight_insights.html', session = session, flight_customers = flight_customers, all_reviews = all_reviews, avg_rating = avg_rating['Average rating'])
+    
 @app.route('/view_reports', methods=['GET'])
 def view_reports():
-    pass 
+    if request.method == 'GET':
+        if session.get('user_type') != 'airlinestaff':
+            error = "Only an airline staff can access this page"
+            return render_template('base.html', session=session, error=error) 
+        airline = get_staff_airline(session.get('username'))
+        most_freq_email, most_freq_name = view_freq_customer(airline)
+        if request.args.get('sold_from_date'):
+            total_tickets = view_report(request.args, airline)
+            return render_template('view_reports.html', session = session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name, airline = airline, total_tickets = total_tickets)
+        elif request.args.get('revenue_from_date'):
+            total_revenue = view_revenue(request.args, airline)
+            return render_template('view_reports.html', session = session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name, airline = airline, total_revenue = total_revenue)  
+        return render_template('view_reports.html', session = session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name, airline = airline)
+
+
+@app.route('/update_system', methods=['GET','POST'])
+def update_system():
+    airports= get_airports()
+    airline = get_staff_airline(session.get('username')) 
+    if request.method == 'GET':
+        if session.get('user_type') != 'airlinestaff':
+            error = "Only an airline staff can access this page"
+            return render_template('base.html', session=session, error=error)
+        return render_template('update_system.html', session=session, airports = airports, airline = airline)
+    if request.method == 'POST': 
+        if len(request.form) == 7:
+            status = create_new_flights(request.form, airline)
+            if status[0]:
+                return render_template('update_system.html', session = session, success = status[1], airports = airports, airline = airline)
+            else:
+                return render_template('update_system.html', session = session, error = "There's a problem with creating the flight", airports = airports, airline = airline)
+        elif len(request.form) == 3:
+            status = add_airplane(request.form, airline)
+            if status[0]:
+                return render_template('update_system.html', session = session, success = status[1], airports = airports, airline = airline)
+            else:
+                return render_template('update_system.html', session = session, error = "There's a problem with adding the plane", airports = airports, airline = airline)
+        elif len(request.form) == 4:
+            status = add_airport(request.form)
+            if status[0]:
+                return render_template('update_system.html', session = session, success = status[1], airports = airports, airline = airline)
+            else:
+                return render_template('update_system.html', session = session, error = "There's a problem with adding the airport", airports = airports, airline = airline)
+
+
+@app.route('/update_system/view_airplanes', methods=['GET'])
+def view_airplanes():
+    if request.method == 'GET':
+        if session.get('user_type') != 'airlinestaff':
+            error = "Only an airline staff can access this page"
+            return render_template('base.html', session=session, error=error)
+        airline = get_staff_airline(session.get('username'))
+        all_airplanes = staff_view_airplane(airline)
+    return render_template('view_airplanes.html', session=session, all_airplanes = all_airplanes, airline=airline)
+
+
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask

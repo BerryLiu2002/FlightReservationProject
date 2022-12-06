@@ -1,36 +1,41 @@
-{% extends 'base.html' %} {% block body %} {%if past_flights%}
-<h2>Here are your past flights</h2>
-<form action="{{ url_for('rate')}}" method="GET">
-  <table style="width: 100%">
-    <tr>
-      <th>Flight Number</th>
-      <th>Airline</th>
-      <th>Airplane ID</th>
-      <th>Departure Airport</th>
-      <th>Arrival Airport</th>
-      <th>Departure Time</th>
-      <th>Arrival Time</th>
-    </tr>
-    {% for flight in past_flights %}
-    <tr style="text-align: center">
-      <td>{{flight.get('flight_num')}}</td>
-      <td>{{flight.get('airline')}}</td>
-      <td>{{flight.get('airplane_id')}}</td>
-      <td>{{flight.get('departure_airport')}}</td>
-      <td>{{flight.get('arrival_airport')}}</td>
-      <td>{{flight.get('departure_time')}}</td>
-      <td>{{flight.get('arrival_time')}}</td>
-      <td>
-        <a href="{{ url_for('form', flight_num=flight.flight_num) }}"
-          >Rate Flight</a
-        >
-      </td>
-    </tr>
-  </table>
+{% extends 'base.html' %} {% block body %}
+<form
+  action="{{ url_for('get_filtered', departure_airport = departure, arrival_airport = arrival, start_date = start, end_date = end) }}"
+  method="GET"
+>
+  <div style="display: flex; justify-content: space-evenly" id="filter_bar">
+    <div class="filter_item">
+      <label for="departure">Departure Airport</label><br />
+      <select name="departure" id="departure">
+        <option disabled selected value>-- select an option --</option>
+        {% for airport in airports %}
+        <option value="{{airport.name}}">{{airport.name}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filter_item">
+      <label for="arrival">Arrival Airport</label><br />
+      <select name="arrival" id="arrival">
+        <option disabled selected value>-- select an option --</option>
+        {% for airport in airports %}
+        <option value="{{airport.name}}">{{airport.name}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filter_item">
+      <label for="start_date">Start Date</label><br />
+      <input type="date" name="start_date" id="start" />
+    </div>
+    <div>
+      <label for="end_date">End Date</label><br />
+      <input type="date" name="end_date" id="end" />
+    </div>
+    <input style="margin-top: 10px" type="submit" value="Search" />
+  </div>
 </form>
-{% endfor %} {%else%}
-<h2>You do not have any past flights</h2>
-{%endif%} {%if future_flights%}
+{%if not default%} {%if future_flights%}
 <h2>Here are your future flights:</h2>
 <form action="{{ url_for('cancel_trip') }}" method="POST">
   <table style="width: 100%">
@@ -62,4 +67,36 @@
 </form>
 {%else%}
 <h2>You have no upcoming flights</h2>
-{%endif%} {% endblock %}
+{%endif%} {%if past_flights%}
+<h2>Here are your past flights</h2>
+<form action="{{ url_for('rate')}}" method="GET">
+  <table style="width: 100%">
+    <tr>
+      <th>Flight Number</th>
+      <th>Airline</th>
+      <th>Airplane ID</th>
+      <th>Departure Airport</th>
+      <th>Arrival Airport</th>
+      <th>Departure Time</th>
+      <th>Arrival Time</th>
+    </tr>
+    {% for flight in past_flights %}
+    <tr style="text-align: center">
+      <td>{{flight.get('flight_num')}}</td>
+      <td>{{flight.get('airline')}}</td>
+      <td>{{flight.get('airplane_id')}}</td>
+      <td>{{flight.get('departure_airport')}}</td>
+      <td>{{flight.get('arrival_airport')}}</td>
+      <td>{{flight.get('departure_time')}}</td>
+      <td>{{flight.get('arrival_time')}}</td>
+      <td>
+        <a href="{{ url_for('form', flight_num=flight.flight_num) }}"
+          >Rate Flight</a
+        >
+      </td>
+    </tr>
+  </table>
+</form>
+{% endfor %} {%else%}
+<h2>You do not have any past flights</h2>
+{%endif%} {%endif%} {% endblock %}

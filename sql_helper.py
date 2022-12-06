@@ -129,7 +129,28 @@ def get_spending(email):
     cursor.execute(query, email)
     data = cursor.fetchall()
     return data
-    
+
+def get_filtered_flights(email, args):
+    inputs = ()
+    query = """SELECT Tickets.customer_email, flights.flight_num, Flights.departure_airport, Flights.arrival_airport,
+            Flights.departure_time FROM Flights join tickets on Flights.flight_num = Tickets.flight_num
+            WHERE Tickets.customer_email = %s"""
+    condition_list = []
+    inputs+= (email,)
+    if args.get('start_date'):
+        condition_list.append('Date(Tickets.departure_time) >= %s')
+        inputs+= (args.get('start_date'),)
+    if args.get('end_date'):
+        condition_list.append('Date(Tickets.departure_time) <= %s')
+        inputs+= (args.get('end_date'),)
+    if len(condition_list)>1:
+        query += " AND ".join(condition_list)
+    print(query)
+    cursor.execute(query, inputs)
+    data = cursor.fetchall() 
+    # print(args)
+    return data
+
 def staff_default_view_flights():
     pass
 

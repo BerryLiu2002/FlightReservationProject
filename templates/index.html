@@ -1,8 +1,7 @@
 {% extends 'base.html' %} {% block head %} {% endblock %} {% block body %} {% if
 session.user_type == 'customer' %}
 <li>
-  <a href="{{ url_for('purchased_flights')}}">View My Flights</a>
+  <a href="{{ url_for('purchased_flights')}}">List out Purchased Flights</a>
 </li>
-<!-- <li><a href="{{url_for('rate')}}">Rate my Flights</a></li> -->
 <li><a href="{{url_for('spending')}}">Track my spending</a></li>
 {% elif session.user_type == 'airlinestaff' %} {% endif %} {% endblock %}
