@@ -79,7 +79,7 @@ def get_filtered():
 def cancel_trip():
     id = request.form.get('id')
     if cancel_flight(id):
-        data = get_flights(session.get('username'))
+        data = get_past_flights(session.get('username'))
         print(data)
         return redirect('/purchased')
 
