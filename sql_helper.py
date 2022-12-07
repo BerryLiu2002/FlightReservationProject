@@ -130,25 +130,35 @@ def get_spending(email):
     data = cursor.fetchall()
     return data
 
+def check_past(data):
+    query = "SELECT Date(now())  > %s ;"
+    cursor.execute(query, data.get('departure_time'))
+    data = cursor.fetchall()
+    return data
+    
 def get_filtered_flights(email, args):
     inputs = ()
-    query = """SELECT Tickets.customer_email, flights.flight_num, Flights.departure_airport, Flights.arrival_airport,
-            Flights.departure_time FROM Flights join tickets on Flights.flight_num = Tickets.flight_num
-            WHERE Tickets.customer_email = %s"""
+    query = """SELECT flights.flight_num, Flights.airplane_id, Tickets.airline, Flights.departure_airport, Flights.arrival_airport,
+                Flights.departure_time, Flights.arrival_time
+                FROM Flights join Tickets on Flights.flight_num = Tickets.flight_num
+            """
     condition_list = []
-    inputs+= (email,)
+
+    if email:
+        condition_list.append('Tickets.customer_email = %s')
+        inputs+= (email,)
     if args.get('start_date'):
         condition_list.append('Date(Tickets.departure_time) >= %s')
         inputs+= (args.get('start_date'),)
     if args.get('end_date'):
         condition_list.append('Date(Tickets.departure_time) <= %s')
         inputs+= (args.get('end_date'),)
-    if len(condition_list)>1:
-        query += " AND ".join(condition_list)
+    if condition_list:
+        query += " WHERE " + " AND ".join(condition_list)
     print(query)
     cursor.execute(query, inputs)
     data = cursor.fetchall() 
-    # print(args)
+    print(args)
     return data
 
 def staff_default_view_flights():
