@@ -68,7 +68,7 @@
 {%else%}
 <h2>You have no upcoming flights</h2>
 {%endif%} {%if past_flights%}
-<h2>Here are your past flights</h2>
+<h2>Here are your past flights:</h2>
 <form action="{{ url_for('rate')}}" method="GET">
   <table style="width: 100%">
     <tr>
@@ -95,8 +95,9 @@
         >
       </td>
     </tr>
+    {% endfor %}
   </table>
 </form>
-{% endfor %} {%else%}
+{%else%}
 <h2>You do not have any past flights</h2>
 {%endif%} {%endif%} {% endblock %}
