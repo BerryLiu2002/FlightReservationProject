@@ -124,9 +124,24 @@ def cancel_flight(id):
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False
-def get_spending(email):
-    query = "SELECT YEAR(f.departure_time) as Year, MONTHNAME(f.departure_time) as Month, CAST(SUM(f.sold_price) AS SIGNED) as Spent  FROM `Flights` NATURAL JOIN TICKETS as f WHERE f.customer_email = %s GROUP by f.departure_time"
-    cursor.execute(query, email)
+def get_spending(email, args):
+    query = """SELECT YEAR(f.departure_time) as Year, MONTHNAME(f.departure_time) as Month,
+     CAST(SUM(f.sold_price) AS SIGNED) as Spent  FROM `Flights` NATURAL JOIN TICKETS as f """
+    # WHERE f.customer_email = %s GROUP by f.departure_time
+    condition_list = []
+    inputs = ()
+    if email:
+        condition_list.append('f.customer_email = %s')
+        inputs+= (email,)
+    if args.get('start_date'):
+        condition_list.append('Date(f.departure_time) >= %s')
+        inputs+= (args.get('start_date'),)
+    if args.get('end_date'):
+        condition_list.append('Date(f.departure_time) <= %s')
+        inputs+= (args.get('end_date'),)
+    query += " WHERE " + " AND ".join(condition_list)
+    query += "GROUP by f.departure_time"
+    cursor.execute(query, inputs)
     data = cursor.fetchall()
     return data
 
