@@ -156,7 +156,7 @@ def check_past(data):
     cursor.execute(query, data.get('departure_time'))
     data = cursor.fetchall()
     return data
-    
+
 def get_filtered_flights(email, args):
     inputs = ()
     query = """SELECT flights.flight_num, Flights.airplane_id, Tickets.airline, Flights.departure_airport, Flights.arrival_airport,
@@ -167,7 +167,7 @@ def get_filtered_flights(email, args):
 
     if email:
         condition_list.append('Tickets.customer_email = %s')
-        inputs+= (email,)
+    inputs+= (email,)
     if args.get('start_date'):
         condition_list.append('Date(Tickets.departure_time) >= %s')
         inputs+= (args.get('start_date'),)
@@ -349,7 +349,7 @@ def view_freq_customer(airline):
     cursor.execute(query, email['customer_email'])
     name = cursor.fetchone()
     return email, name['name']
-    return 
+
 
 def view_report(data, airline):
     from_date = data.get('sold_from_date')
