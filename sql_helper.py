@@ -3,6 +3,7 @@ import dotenv
 import pymysql.cursors
 from datetime import datetime
 from encrypt import encrypt_string
+from itertools import chain
 
 # load in environment variables
 dotenv.load_dotenv()
@@ -77,9 +78,14 @@ def check_register_airlinestaff(data):
         return False
     # insert phone numbers
     phone = data.get('phone')
-    query = 'INSERT INTO PhoneNumbers (phone_num, username) VALUES (%s, %s)'
+    numbers = phone.split(',')
+    numbers = [x.strip() for x in numbers]
+    num_count = len(numbers)
+    inserts = ", ".join(["(%s, %s)"]*num_count)
+    query = 'INSERT INTO PhoneNumbers (username, phone_num) VALUES ' + inserts
+    inputs = tuple(chain.from_iterable(zip([username]*num_count, numbers)))
     try:
-        cursor.execute(query, (phone, username))
+        cursor.execute(query, inputs)
         conn.commit()
         return True
     except pymysql.err.IntegrityError as e:
