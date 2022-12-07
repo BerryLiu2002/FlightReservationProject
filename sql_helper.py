@@ -308,19 +308,21 @@ def view_freq_customer(airline):
     return email, name['name']
 
 def view_report(data, airline):
-    departure_time = data.get('departure_time')   
+    from_date = data.get('sold_from_date')
+    to_date = data.get('sold_to_date')   
     query = """Select count(id) AS total_tickets_sold FROM tickets WHERE airline = %s
-            AND departure_time > %s AND departure_time < %s)"""
-    cursor.execute(query, (airline, departure_time, departure_time))
-    data = cursor.fetchall()
+            AND DATE(departure_time) > %s AND DATE(departure_time) < %s"""
+    cursor.execute(query, (airline, from_date, to_date))
+    data = cursor.fetchone()
     return data
 
 def view_revenue(data, airline):
-    departure_time = data.get('departure_time')
+    from_date = data.get('revenue_from_date')
+    to_date = data.get('revenue_to_date')
     query = """SELECT SUM(sold_price) as total_revenue FROM tickets WHERE airline = %s
-            AND departure_time > %s AND departure_time < %s)"""
-    cursor.execute(query, (airline, departure_time, departure_time))
-    data = cursor.fetchall()
+            AND DATE(departure_time) > %s AND DATE(departure_time) < %s"""
+    cursor.execute(query, (airline, from_date, to_date))
+    data = cursor.fetchone()
     return data
 
 def create_new_flights(data, airline):
