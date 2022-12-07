@@ -332,13 +332,24 @@ def view_avg_rating(airline, flight_num, departure_time):
     data = cursor.fetchone()
     return data
 
-def view_freq_customer(data):
-    query = """SELECT email FROM tickets 
-            WHERE COUNT(email) = 
-            (SELECT MAX(COUNT(email)) FROM tickets)"""
+def view_freq_customer(airline):
+    create_view = "CREATE VIEW only_airline AS (SELECT customer_email FROM tickets WHERE airline = %s)"
+    cursor.execute(create_view, airline)
+    query = """SELECT customer_email, COUNT(*) AS frequency 
+            FROM only_airline 
+            GROUP BY customer_email 
+            ORDER BY frequency DESC
+            LIMIT 1"""
     cursor.execute(query)
-    data = cursor.fetchall()
-    return data
+    email = cursor.fetchone()
+    drop_view = "DROP VIEW `only_airline`"
+    cursor.execute(drop_view)
+    query = """SELECT name FROM customers
+            WHERE email = %s"""
+    cursor.execute(query, email['customer_email'])
+    name = cursor.fetchone()
+    return email, name['name']
+    return 
 
 def view_report(data, airline):
     from_date = data.get('sold_from_date')
@@ -358,8 +369,13 @@ def view_revenue(data, airline):
     data = cursor.fetchone()
     return data
 
-def create_new_flights(data):
-    flight_num = data.get('flight_num')
+def all_customer_flights(email):
+    query = 'SELECT * FROM customers WHERE email = %s'
+    cursor.execute(query, email)
+    data = cursor.fetchall()
+    return data
+
+def create_new_flights(data, airline):
     airplane_id = data.get('airplane_id')
     base_price = data.get('base_price')
     status = data.get('status')
@@ -367,27 +383,35 @@ def create_new_flights(data):
     arrival_airport = data.get('arrival_airport')
     departure_time = data.get('departure_time')
     arrival_time = data.get('arrival_time')
-    query = 'INSERT INTO flights (flight_num, airplane_id, base_price, status, departure_airport, arrival_airport, departure_time, arrival_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'
+    query = 'INSERT INTO Flights (airplane_id, base_price, status, departure_airport, arrival_airport, departure_time, arrival_time, airline) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'
     try:
-        cursor.execute(query, (flight_num, airplane_id, base_price, status, departure_airport, arrival_airport, departure_time, arrival_time))
+        cursor.execute(query, (airplane_id, base_price, status, departure_airport, arrival_airport, departure_time, arrival_time, airline))
         conn.commit()
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False
+    return True, "Sucessfully added flight."
 
-def add_airplane(data):
+
+def add_airplane(data, airline):
     id = data.get('id')
     num_seats = data.get('num_seats')
     manufacturing_company = data.get('manufacturing_company')
     age = data.get('age')
-    airline = data.get('airline')
-    query = 'INSERT INTO airplanes (id, num_seats, manufacturing_company, age, airline) VALUES (%s, %s, %s, %s, %s)'
+    query = 'INSERT INTO airplanes (num_seats, manufacturing_company, age, airline) VALUES (%s, %s, %s, %s)'
     try:
-        cursor.execute(query, (id, num_seats, manufacturing_company, age, airline))
+        cursor.execute(query, (num_seats, manufacturing_company, age, airline))
         conn.commit()
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False
+    return True, "Sucessfully added plane."
+
+def staff_view_airplane(airline):
+    query = 'SELECT * FROM airplanes WHERE airline = %s'
+    cursor.execute(query, airline)
+    data = cursor.fetchall()
+    return data
 
 def add_airport(data):
     name = data.get('name')
@@ -401,17 +425,23 @@ def add_airport(data):
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False 
+    return True, "Sucessfully added airport."
+
 
 def change_flight_status(data):
     status = data.get('status')
+    airline = data.get('airline')
     flight_num = data.get('flight_num')
-    query = 'UPDATE flights SET status = %s WHERE flight_num = %s'
+    departure_time = data.get('departure_time')
+    query = 'UPDATE flights SET status = %s WHERE airline = %s AND flight_num = %s AND DATE(departure_time) = %s'
     try:
-        cursor.execute(query, (status, flight_num))
+        cursor.execute(query, (status, airline, flight_num, departure_time))
         conn.commit()
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False 
+    return True, "Sucessfully updated status"
+
 
 
 def book_flight_ticket(email, flight_num, departure_time, airline, form):

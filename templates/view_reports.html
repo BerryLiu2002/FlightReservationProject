@@ -11,7 +11,7 @@
         <tr>
           <td>{{most_freq_name}}</td>
           <td>{{most_freq_email}}</td>
-          <td><a href="{{url_for('view_reports')}}">View all flights from {{most_freq_name}}</a></td>
+          <td><a href="{{url_for('freq_customer_flights', most_freq_email = most_freq_email)}}">View all flights from {{most_freq_name}}</a></td>
         </tr>
       </table>
 

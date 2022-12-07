@@ -184,6 +184,7 @@ def view_flight_staff():
         error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
         return render_template('view_flight_staff.html', session=session, airline = airline, airports=airports, cities=cities, flights_to=flights_to, error=error)
     if request.method == 'POST':
+        print(request.form)
         update_status = change_flight_status(request.form)
         if update_status[0]:
             return render_template('view_flight_staff.html', session = session, update_success = update_status[1])
@@ -210,13 +211,13 @@ def view_reports():
             return render_template('base.html', session=session, error=error) 
         airline = get_staff_airline(session.get('username'))
         monthly_ticket_sold, month = annual_ticket_sold(airline)
+        print(month)
         monthly_revenue = annual_revenue(airline)
         most_freq_email, most_freq_name = view_freq_customer(airline)
         if request.args.get('sold_from_date'):
             total_tickets = view_report(request.args, airline)
-            print(request.args)
             return render_template('view_reports.html', session = session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name, 
-            airline = airline, total_tickets = total_tickets['total_tickets_sold'], monthly_ticket_sold = monthly_ticket_sold, monthly_revenue = monthly_revenue)
+            airline = airline, total_tickets = total_tickets['total_tickets_sold'], monthly_ticket_sold = monthly_ticket_sold, monthly_revenue = monthly_revenue, month = month)
         elif request.args.get('revenue_from_date'):
             total_revenue = view_revenue(request.args, airline)
             return render_template('view_reports.html', session = session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name, 
@@ -256,6 +257,16 @@ def annual_revenue(airline):
         date_last_year = date_next_month
     res.append(sum(res))
     return res
+
+
+@app.route('/view_reports/freq_customer_flights/<most_freq_email>', methods=['GET'])
+def freq_customer_flights(most_freq_email):
+    if request.method == 'GET':
+        if session.get('user_type') != 'airlinestaff':
+            error = "Only an airline staff can access this page"
+            return render_template('base.html', session=session, error=error)
+        all_flights = all_customer_flights(most_freq_email)
+    return render_template('freq_customer_flights.html', session=session, all_flights = all_flights)
 
 
 @app.route('/update_system', methods=['GET','POST'])
