@@ -16,23 +16,6 @@
       </table>
 
       <h3>Tickets sold report</h3>
-      <h4>Tickets sold within last 12 months</h4> 
-      <table>
-          <tr>
-            <th>Month</th>
-            <th>Tickets sold</th>
-          </tr>
-          {% for i in range(12) %}
-          <tr>
-            
-              <td>{{month[i]}}</td>
-              <td>{{monthly_ticket_sold[i]}}</td>    
-                   
-          </tr>
-          {% endfor %}
-          <td>Total tickets: </td> 
-              <td>{{monthly_ticket_sold[12]}}</td>
-        </table>
       <form action="{{ url_for('view_reports') }}" method="GET">
         <div id="filter_bar">
         <div class="filter_item">
@@ -46,29 +29,7 @@
         </div>
         <input type="submit" value="See Report" />
         </form>
-      {% if total_tickets %}
-      <p>The total tickets sold within date range is: {{total_tickets}}</p>
-      {% endif %}
-
       <h3>Tickets revenue report</h3> 
-    </table>
-    <h4>Revenue within last 12 months</h4> 
-    <table>
-        <tr>
-          <th>Month</th>
-          <th>Monthly revenue</th>
-        </tr>
-        {% for i in range(12) %}
-        <tr>
-          
-            <td>{{month[i]}}</td>
-            <td>{{monthly_revenue[i]}}</td>    
-                 
-        </tr>
-        {% endfor %}
-        <td>Total tickets: </td> 
-            <td>{{monthly_revenue[12]}}</td>
-      </table>
       <form action="{{ url_for('view_reports') }}" method="GET" >
         <div id="filter_bar">
         <div class="filter_item">
@@ -82,7 +43,4 @@
         </div>
         <input type="submit" value="See Report" />
         </form>
-        {% if total_revenue %}
-        <p>The total revenue within date range is: {{total_revenue}}</p>
-        {% endif %}
 {% endblock %}
