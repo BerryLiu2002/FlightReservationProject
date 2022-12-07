@@ -73,9 +73,25 @@ def purchased_flights():
 @app.route('/filtered-flights', methods = ['GET'])
 def get_filtered():
     if request.method == 'GET':
+        past_flights = []
+        future_flights = []
+        airports = get_airports()
         data = get_filtered_flights(session.get('username'),request.args.to_dict())
-        return render_template('purchased.html', future_flights= data, session=session, default = True)
+        for flight in data:
+            if check_past(flight):
+                past_flights.append(flight)
+            else:
+                future_flights.append(flight)
+        return render_template('purchased.html', airports = airports, future_flights = future_flights, past_flights = past_flights, session=session, default = False)
 
+@app.route('/spending', methods=['GET', 'POST'])
+def spending():
+    if request.method=='GET':
+        data = get_spending(session.get('username'), request.args.to_dict())
+        return render_template('spending.html', session=session, data=data)
+    if request.method=='POST':
+        data = get_spending(session.get('username'), request.args.to_dict())
+        return render_template('spending.html', session=session, data=data)
 
 @app.route('/cancel', methods=['POST'])
 def cancel_trip():
@@ -103,11 +119,6 @@ def form(flight_num):
         if make_review(rating, comment, email, flight_num):
             return render_template('rating-form.html',session=session)
         return redirect('/purchased')
-@app.route('/spending', methods=['GET'])
-def spending():
-    if request.method=='GET':
-        data = get_spending(session.get('username'))
-        return render_template('spending.html', session=session, data=data)
 
 @app.route('/future_flights', methods=['GET'])
 def future_flights():

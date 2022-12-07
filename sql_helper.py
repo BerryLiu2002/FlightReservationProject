@@ -130,31 +130,56 @@ def cancel_flight(id):
     except pymysql.err.IntegrityError as e:
         print('Error: ', e)
         return False
-def get_spending(email):
-    query = "SELECT YEAR(f.departure_time) as Year, MONTHNAME(f.departure_time) as Month, CAST(SUM(f.sold_price) AS SIGNED) as Spent  FROM `Flights` NATURAL JOIN TICKETS as f WHERE f.customer_email = %s GROUP by f.departure_time"
-    cursor.execute(query, email)
+def get_spending(email, args):
+    query = """SELECT YEAR(f.departure_time) as Year, MONTHNAME(f.departure_time) as Month,
+     CAST(SUM(f.sold_price) AS SIGNED) as Spent  FROM `Flights` NATURAL JOIN TICKETS as f """
+    # WHERE f.customer_email = %s GROUP by f.departure_time
+    condition_list = []
+    inputs = ()
+    if email:
+        condition_list.append('f.customer_email = %s')
+        inputs+= (email,)
+    if args.get('start_date'):
+        condition_list.append('Date(f.departure_time) >= %s')
+        inputs+= (args.get('start_date'),)
+    if args.get('end_date'):
+        condition_list.append('Date(f.departure_time) <= %s')
+        inputs+= (args.get('end_date'),)
+    query += " WHERE " + " AND ".join(condition_list)
+    query += "GROUP by f.departure_time"
+    cursor.execute(query, inputs)
     data = cursor.fetchall()
     return data
 
+def check_past(data):
+    query = "SELECT Date(now())  > %s ;"
+    cursor.execute(query, data.get('departure_time'))
+    data = cursor.fetchall()
+    return data
+    
 def get_filtered_flights(email, args):
     inputs = ()
-    query = """SELECT Tickets.customer_email, flights.flight_num, Flights.departure_airport, Flights.arrival_airport,
-            Flights.departure_time FROM Flights join tickets on Flights.flight_num = Tickets.flight_num
-            WHERE Tickets.customer_email = %s"""
+    query = """SELECT flights.flight_num, Flights.airplane_id, Tickets.airline, Flights.departure_airport, Flights.arrival_airport,
+                Flights.departure_time, Flights.arrival_time
+                FROM Flights join Tickets on Flights.flight_num = Tickets.flight_num
+            """
     condition_list = []
-    inputs+= (email,)
+
+    if email:
+        condition_list.append('Tickets.customer_email = %s')
+        inputs+= (email,)
     if args.get('start_date'):
         condition_list.append('Date(Tickets.departure_time) >= %s')
         inputs+= (args.get('start_date'),)
     if args.get('end_date'):
         condition_list.append('Date(Tickets.departure_time) <= %s')
         inputs+= (args.get('end_date'),)
-    if len(condition_list)>1:
-        query += " AND ".join(condition_list)
+    if condition_list:
+        query += " WHERE " + " AND ".join(condition_list)
     print(query)
     cursor.execute(query, inputs)
     data = cursor.fetchall() 
-    # print(args)
+    print(args)
     return data
 
 def staff_default_view_flights():
