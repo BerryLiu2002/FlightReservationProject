@@ -309,24 +309,22 @@ def view_freq_customer(data):
     data = cursor.fetchall()
     return data
 
-def view_report(data):
-    departure_time = data.get('departure_time')   
-    query = """Select count(id) AS total_tickets_sold FROM Tickets WHERE id = 
-            (SELECT tickets.id FROM tickets JOIN fLights 
-            ON tickets.flight_num = flights.flight_num 
-            WHERE flights.departure_time > %s AND flights.departure_time < %s)"""
-    cursor.execute(query, (departure_time, departure_time))
-    data = cursor.fetchall()
+def view_report(data, airline):
+    from_date = data.get('sold_from_date')
+    to_date = data.get('sold_to_date')   
+    query = """Select count(id) AS total_tickets_sold FROM tickets WHERE airline = %s
+            AND DATE(departure_time) > %s AND DATE(departure_time) < %s"""
+    cursor.execute(query, (airline, from_date, to_date))
+    data = cursor.fetchone()
     return data
 
-def view_revenue(data):
-    departure_time = data.get('departure_time')
-    query = """Select sum(sold_price) AS total_revenue FROM Tickets WHERE id = 
-            (SELECT tickets.id FROM tickets JOIN flights 
-            ON tickets.flight_num = flights.flight_num 
-            WHERE flights.departure_time > %s AND flights.departure_time < %s)"""
-    cursor.execute(query, (departure_time, departure_time))
-    data = cursor.fetchall()
+def view_revenue(data, airline):
+    from_date = data.get('revenue_from_date')
+    to_date = data.get('revenue_to_date')
+    query = """SELECT SUM(sold_price) as total_revenue FROM tickets WHERE airline = %s
+            AND DATE(departure_time) > %s AND DATE(departure_time) < %s"""
+    cursor.execute(query, (airline, from_date, to_date))
+    data = cursor.fetchone()
     return data
 
 def create_new_flights(data):

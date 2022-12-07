@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, session, url_for, redirect, j
 from sql_helper import *
 import _json
 from encrypt import encrypt_string
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 #Initialize the app from Flask
 app = Flask(__name__)
 
@@ -196,14 +198,53 @@ def view_reports():
             error = "Only an airline staff can access this page"
             return render_template('base.html', session=session, error=error) 
         airline = get_staff_airline(session.get('username'))
+        monthly_ticket_sold, month = annual_ticket_sold(airline)
+        monthly_revenue = annual_revenue(airline)
         most_freq_email, most_freq_name = view_freq_customer(airline)
         if request.args.get('sold_from_date'):
             total_tickets = view_report(request.args, airline)
-            return render_template('view_reports.html', session = session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name, airline = airline, total_tickets = total_tickets)
+            print(request.args)
+            return render_template('view_reports.html', session = session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name, 
+            airline = airline, total_tickets = total_tickets['total_tickets_sold'], monthly_ticket_sold = monthly_ticket_sold, monthly_revenue = monthly_revenue)
         elif request.args.get('revenue_from_date'):
             total_revenue = view_revenue(request.args, airline)
-            return render_template('view_reports.html', session = session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name, airline = airline, total_revenue = total_revenue)  
-        return render_template('view_reports.html', session = session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name, airline = airline)
+            return render_template('view_reports.html', session = session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name, 
+            airline = airline, total_revenue = total_revenue['total_revenue'], monthly_ticket_sold = monthly_ticket_sold, month = month, monthly_revenue = monthly_revenue)  
+        return render_template('view_reports.html', session = session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name, 
+        airline = airline, monthly_ticket_sold = monthly_ticket_sold, month = month, monthly_revenue = monthly_revenue)
+
+def annual_ticket_sold(airline):
+    date_last_year = datetime.today() - relativedelta(months=12)
+    date_res = []
+    res = []
+    for i in range(12):
+        date_next_month = date_last_year + relativedelta(months=1)
+        from_date = date_last_year.strftime('%Y-%m-%d')
+        date_res.append(date_last_year.strftime('%Y-%m'))
+        to_date = date_next_month.strftime('%Y-%m-%d')
+        args = {'sold_from_date' : from_date, 'sold_to_date' : to_date}
+        total_tickets = view_report(args, airline)
+        res.append(total_tickets['total_tickets_sold'])
+        date_last_year = date_next_month
+    res.append(sum(res))
+    return res, date_res
+
+def annual_revenue(airline):
+    date_last_year = datetime.today() - relativedelta(months=12)
+    res = []
+    for i in range(12):
+        date_next_month = date_last_year + relativedelta(months=1)
+        from_date = date_last_year.strftime('%Y-%m-%d')
+        to_date = date_next_month.strftime('%Y-%m-%d')
+        args = {'revenue_from_date' : from_date, 'revenue_to_date' : to_date}
+        total_revenue = view_revenue(args, airline)
+        if total_revenue['total_revenue'] != None:
+            res.append(total_revenue['total_revenue'])
+        else:
+            res.append(0)
+        date_last_year = date_next_month
+    res.append(sum(res))
+    return res
 
 
 @app.route('/update_system', methods=['GET','POST'])
