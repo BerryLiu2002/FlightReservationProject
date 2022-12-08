@@ -184,7 +184,6 @@ def view_flight_staff():
         error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
         return render_template('view_flight_staff.html', session=session, airline = airline, airports=airports, cities=cities, flights_to=flights_to, error=error)
     if request.method == 'POST':
-        print(request.form)
         update_status = change_flight_status(request.form)
         if update_status[0]:
             return render_template('view_flight_staff.html', session = session, update_success = update_status[1])
