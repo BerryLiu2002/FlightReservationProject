@@ -273,29 +273,31 @@ def view_all_flights_staff(args, airline):
     sql = "SELECT * FROM Flights WHERE airline = %s "
     condition_list = []
     if args.get('departure'):
-        condition_list.append("departure_airport = %s")
+        condition_list.append("flights.departure_airport = %s")
         inputs += (args.get('departure'),)
     if args.get('arrival'):
-        condition_list.append("arrival_airport = %s")
+        condition_list.append("flights.arrival_airport = %s")
         inputs += (args.get('arrival'),)
     if args.get('departure_city'):
-        condition_list.append("departure_airport IN (SELECT name FROM airports WHERE city = %s)")
+        condition_list.append("flights.departure_airport IN (SELECT departure_airport FROM Flights \
+        INNER JOIN airports ON Flights.departure_airport = airports.name WHERE airports.city = %s)")
         inputs += (args.get('departure_city'),)
     if args.get('arrival_city'):
-        condition_list.append("arrival_airport IN (SELECT name FROM airports WHERE city = %s)")
+        condition_list.append("flights.arrival_airport IN (SELECT arrival_airport FROM Flights \
+        INNER JOIN airports ON Flights.arrival_airport = airports.name WHERE airports.city = %s)")
         inputs += (args.get('arrival_city'),)
     if args.get('from_date'):
-        condition_list.append("DATE(departure_time) > %s")
+        condition_list.append("DATE(flights.departure_time) > %s")
         inputs += (args.get('from_date'),)
     if args.get('to_date'):
-        condition_list.append("DATE(departure_time) < %s")
+        condition_list.append("DATE(flights.departure_time) < %s")
         inputs += (args.get('to_date'),)  
     if args.get('flight_num'):
-        condition_list.append("flight_num = %s")
+        condition_list.append("flights.flight_num = %s")
         inputs += (args.get('flight_num'),)
     if not condition_list:
-        condition_list.append("DATE(departure_time) > CURDATE()")
-        condition_list.append("DATE(departure_time) < (CURDATE() + INTERVAL 30 DAY)")
+        condition_list.append("DATE(flights.departure_time) > CURDATE()")
+        condition_list.append("DATE(flights.departure_time) < (CURDATE() + INTERVAL 30 DAY)")
     sql += " AND " + " AND ".join(condition_list)
     print(sql)
     cursor.execute(sql, inputs)
