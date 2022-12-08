@@ -1,6 +1,5 @@
-from flask import Flask, render_template, request, session, url_for, redirect, jsonify, flash
+from flask import Flask, render_template, request, session, url_for, redirect
 from sql_helper import *
-import _json
 from encrypt import encrypt_string
 from datetime import date
 from dateutil.relativedelta import relativedelta
@@ -68,6 +67,9 @@ def register():
 @app.route('/purchased', methods=['GET', 'POST'])
 def purchased_flights():
     if request.method == 'GET':
+        if session.get('user_type') != 'customer':
+            error = "Only customers can access this page"
+            return render_template('base.html', session=session, error=error)
         data = get_future_flights(session.get('username'))
         data2 = get_past_flights(session.get('username'))
         airports = get_airports()
@@ -77,6 +79,9 @@ def purchased_flights():
 @app.route('/filtered-flights', methods=['GET'])
 def get_filtered():
     if request.method == 'GET':
+        if session.get('user_type') != 'customer':
+            error = "Only customers can access this page"
+            return render_template('base.html', session=session, error=error)
         past_flights = []
         future_flights = []
         airports = get_airports()
@@ -93,6 +98,9 @@ def get_filtered():
 @app.route('/spending', methods=['GET', 'POST'])
 def spending():
     if request.method == 'GET':
+        if session.get('user_type') != 'customer':
+            error = "Only customers can access this page"
+            return render_template('base.html', session=session, error=error)
         data = get_spending(session.get('username'), request.args.to_dict())
         total = 0
         for expense in data:
@@ -109,6 +117,9 @@ def spending():
 
 @app.route('/cancel', methods=['POST'])
 def cancel_trip():
+    if session.get('user_type') != 'customer':
+        error = "Only customers can access this page"
+        return render_template('base.html', session=session, error=error)
     id = request.form.get('id')
     if cancel_flight(id):
         data = get_past_flights(session.get('username'))
@@ -119,6 +130,9 @@ def cancel_trip():
 @app.route('/ratings', methods=['GET', 'POST'])
 def rate():
     if request.method == 'GET':
+        if session.get('user_type') != 'customer':
+            error = "Only customers can access this page"
+            return render_template('base.html', session=session, error=error)
         data = get_ratable_flights(session.get('username'))
         return render_template('ratings.html', data=data, session=session)
 
@@ -126,6 +140,9 @@ def rate():
 @app.route('/rating-form/<flight_num>', methods=['GET', 'POST'])
 def form(flight_num):
     if request.method == 'GET':
+        if session.get('user_type') != 'customer':
+            error = "Only customers can access this page"
+            return render_template('base.html', session=session, error=error)
         return render_template('rating-form.html', data=flight_num, session=session)
     if request.method == 'POST':
         rating = request.form.get('stars')
@@ -143,6 +160,9 @@ def form(flight_num):
 @app.route('/future_flights', methods=['GET'])
 def future_flights():
     if request.method == 'GET':
+        if session.get('user_type') != 'customer':
+            error = "Only customers can access this page"
+            return render_template('base.html', session=session, error=error)
         airports = get_airports()
         cities = get_airport_cities()
         flights_to = filter_future_flights(
