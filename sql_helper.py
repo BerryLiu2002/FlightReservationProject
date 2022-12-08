@@ -174,6 +174,13 @@ def get_filtered_flights(email, args):
     if args.get('end_date'):
         condition_list.append('Date(Tickets.departure_time) <= %s')
         inputs+= (args.get('end_date'),)
+    if args.get('departure'):
+        condition_list.append('Flights.departure_airport = %s')
+        inputs+=(args.get('departure'),)
+    if args.get('arrival'):
+        condition_list.append('Flights.arrival_airport = %s')
+        inputs+=(args.get('arrival'),)
+    # print("the args",args)
     if condition_list:
         query += " WHERE " + " AND ".join(condition_list)
     print(query)
