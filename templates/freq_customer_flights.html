@@ -1,26 +1,20 @@
 {% extends 'base.html' %} 
-
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/flight_search.css')}}"/>
+{% endblock %} 
 {% block body %}
-<h3>All Results</h3>
+<h3>All flights the customer has taken with {{airline}}</h3>
 <table>
   <tr>
-    <th>Departure Airport</th>
-    <th>Arrival Airport</th>
-    <th>Departure Date</th>
-    <th>Arrival Date</th>
     <th>Flight Number</th>
-    <th>Flight Status</th>
+    <th>Departure Date</th>
   </tr>
   {% for flight in all_flights %}
-<tr>
-    <td>{{flight.departure_airport}}</td>
-    <td>{{flight.arrival_airport}}</td>
-    <td>{{flight.departure_time}}</td>
-    <td>{{flight.arrival_time}}</td>
-    <td>{{flight.flight_num}}</td>
-    <td>{{flight.status}}</td>
-</tr>
-    {% endfor %}
+  <tr>
+      <td>{{flight.flight_num}}</td>
+      <td>{{flight.departure_time}}</td>
+  </tr>
+  {% endfor %}
 </table>
 
 {% endblock %} 

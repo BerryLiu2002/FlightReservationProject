@@ -353,27 +353,29 @@ def view_freq_customer(airline):
     return email, name['name']
 
 
-def view_report(data, airline):
-    from_date = data.get('sold_from_date')
-    to_date = data.get('sold_to_date')   
+def view_tickets_sold(from_time, to_time, airline):  
     query = """Select count(id) AS total_tickets_sold FROM tickets WHERE airline = %s
-            AND DATE(departure_time) > %s AND DATE(departure_time) < %s"""
-    cursor.execute(query, (airline, from_date, to_date))
+            AND departure_time >= %s AND departure_time < %s"""
+    cursor.execute(query, (airline, from_time, to_time))
     data = cursor.fetchone()
-    return data
+    return data['total_tickets_sold']
 
-def view_revenue(data, airline):
-    from_date = data.get('revenue_from_date')
-    to_date = data.get('revenue_to_date')
+def view_revenue(from_time, to_time, airline):
     query = """SELECT SUM(sold_price) as total_revenue FROM tickets WHERE airline = %s
-            AND DATE(departure_time) > %s AND DATE(departure_time) < %s"""
-    cursor.execute(query, (airline, from_date, to_date))
+            AND departure_time > %s AND departure_time < %s"""
+    cursor.execute(query, (airline, from_time, to_time))
     data = cursor.fetchone()
-    return data
+    res = data['total_revenue'] 
+    if res == None:
+        res = 0
+    return res
 
-def all_customer_flights(email):
-    query = 'SELECT * FROM customers WHERE email = %s'
-    cursor.execute(query, email)
+def all_customer_flights(email, airline):
+    query = """SELECT flights.flight_num, flights.departure_time FROM flights 
+    INNER JOIN tickets ON flights.flight_num = tickets.flight_num AND flights.departure_time = tickets.departure_time AND flights.airline = tickets.airline
+    INNER JOIN customers ON customers.email = tickets.customer_email 
+    WHERE customers.email = %s AND flights.airline = %s"""
+    cursor.execute(query, (email, airline))
     data = cursor.fetchall()
     return data
 

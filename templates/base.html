@@ -53,9 +53,15 @@
     </div>
 
     <div class="content">
-      {% block body %} {% if error %}
+      {% block body %} 
+      
+
+      
+      {% if error %}
       <p class="error"><strong>Error:</strong> {{error}}</p>
-      {% endif %} {% endblock %}
+      {% endif %} 
+      
+      {% endblock %}
     </div>
   </body>
 </html>
