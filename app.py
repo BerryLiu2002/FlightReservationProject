@@ -187,11 +187,17 @@ def view_flight_staff():
         error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
         return render_template('view_flight_staff.html', session=session, airline = airline, airports=airports, cities=cities, flights_to=flights_to, error=error)
     if request.method == 'POST':
+        airline = get_staff_airline(session.get('username'))
+        airports= get_airports()
+        cities = get_airport_cities()
         update_status = change_flight_status(request.form)
+        flights_to = view_all_flights_staff(request.form, airline)
         if update_status[0]:
-            return render_template('view_flight_staff.html', session = session, update_success = update_status[1])
+            return render_template('view_flight_staff.html', session = session, update_success = update_status[1], flights_to = flights_to, 
+            airline = airline, airports = airports, cities = cities)
         else:
-            return render_template('view_flight_staff.html', session = session, update_error = "There's a problem with changing flight status")
+            return render_template('view_flight_staff.html', session = session, update_error = "There's a problem with changing flight status", 
+            flights_to = flights_to, airline = airline, airports = airports, cities = cities)
 
 
 @app.route('/view_flight_staff/flight_insights/<airline>/<flight_num>/<departure_time>', methods=['GET'])
