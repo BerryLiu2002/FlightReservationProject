@@ -6,7 +6,7 @@
     <input type="text" name="flight_num" id="flight_num">  -->
     <!-- <label required="true" type="text">How many Stars</label> -->
     <p>Please Rate your flight:</p>
-    <input type="radio" id="age1" name="stars" value="1" />
+    <input type="radio" id="age1" name="stars" value="1" required />
     <label for="stars">1</label><br />
     <input type="radio" id="age1" name="stars" value="2" />
     <label for="stars">2</label><br />
@@ -22,5 +22,8 @@
   </div>
   <input type="submit" value="Submit" />
 </form>
-
-{% endblock %}
+{% if success: %}
+<p class="success">{{success}}</p>
+{%else%}
+<p class="error">{{error}}</p>
+{% endif %} {% endblock %}

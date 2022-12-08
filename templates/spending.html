@@ -1,7 +1,7 @@
 {% extends 'base.html' %} {% block body %}
 <form
   action="{{ url_for('spending', start_date = start, end_date = end) }}"
-  method="post"
+  method="POST"
 >
   <div style="display: flex; justify-content: space-around" id="filter_bar">
     <div class="filter_item">
@@ -27,6 +27,12 @@
     <td>{{expense.get('Month')}}</td>
     <td>{{expense.get('Spent')}}</td>
   </tr>
+  {% endfor %}
 </table>
 
-{% endfor %} {% endblock %}
+<table style="width: 86.5%; text-align: right">
+  <tr>
+    <th>Your Total is {{total}}</th>
+  </tr>
+</table>
+{% endblock %}
