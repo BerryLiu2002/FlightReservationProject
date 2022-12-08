@@ -11,7 +11,6 @@ app = Flask(__name__)
 #Define a route to hello function
 @app.route('/')
 def home():
-    print(session)
     return render_template('index.html', session=session)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -130,9 +129,13 @@ def future_flights():
             ret_args = request.args.to_dict()
             print(ret_args)
             ret_args['departure_date'] = ret_args['return_date']
-            ret_args['arrival'], ret_args['departure'] = ret_args['departure'], ret_args['arrival']
+            if ret_args.get('arrival') and ret_args.get('departure'):
+                ret_args['arrival'], ret_args['departure'] = ret_args['departure'], ret_args['arrival']
+            if ret_args.get('arrival_city') and ret_args.get('departure_city'):
+                ret_args['arrival_city'], ret_args['departure_city'] = ret_args['departure_city'], ret_args['arrival_city']
         flights_back = filter_future_flights(ret_args) if request.args.get('return_date') else []
         error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
+        print(f"flights to: {flights_to}, flights back: {flights_back}")
         return render_template('future_flights.html', session=session, airports=airports, cities=cities, flights_to=flights_to, flights_back=flights_back, error=error)
 
 @app.route('/flight_status', methods=['GET'])

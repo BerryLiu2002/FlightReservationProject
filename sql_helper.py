@@ -204,8 +204,8 @@ def get_airport_cities():
 def filter_future_flights(args):
     inputs = ()
     sql = """SELECT flights.flight_num, departure_airport, arrival_airport, departure_time, base_price, flights.airline, 
-            num_seats - (SELECT COUNT(*) FROM tickets GROUP BY tickets.flight_num, tickets.departure_time, tickets.airline 
-                         HAVING tickets.flight_num = flights.flight_num AND tickets.departure_time = flights.departure_time AND tickets.airline = flights.airline) AS seats_left
+            num_seats - (SELECT COUNT(*) FROM tickets WHERE tickets.flight_num = flights.flight_num AND tickets.departure_time = flights.departure_time AND tickets.airline = flights.airline) 
+            AS seats_left
             FROM Flights 
             LEFT JOIN Airplanes 
 	        ON Flights.airplane_id = Airplanes.id"""
