@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, session, url_for, redirect, j
 from sql_helper import *
 import _json
 from encrypt import encrypt_string
-from datetime import datetime
+from datetime import date
 from dateutil.relativedelta import relativedelta
 # Initialize the app from Flask
 app = Flask(__name__)
@@ -11,7 +11,6 @@ app = Flask(__name__)
 # Define a route to hello function
 @app.route('/')
 def home():
-    print(session)
     return render_template('index.html', session=session)
 
 
@@ -153,10 +152,14 @@ def future_flights():
             ret_args = request.args.to_dict()
             print(ret_args)
             ret_args['departure_date'] = ret_args['return_date']
-            ret_args['arrival'], ret_args['departure'] = ret_args['departure'], ret_args['arrival']
+            if ret_args.get('arrival') and ret_args.get('departure'):
+                ret_args['arrival'], ret_args['departure'] = ret_args['departure'], ret_args['arrival']
+            if ret_args.get('arrival_city') and ret_args.get('departure_city'):
+                ret_args['arrival_city'], ret_args['departure_city'] = ret_args['departure_city'], ret_args['arrival_city']
         flights_back = filter_future_flights(
             ret_args) if request.args.get('return_date') else []
         error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
+        print(f"flights to: {flights_to}, flights back: {flights_back}")
         return render_template('future_flights.html', session=session, airports=airports, cities=cities, flights_to=flights_to, flights_back=flights_back, error=error)
 
 
@@ -214,12 +217,17 @@ def view_flight_staff():
         error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
         return render_template('view_flight_staff.html', session=session, airline=airline, airports=airports, cities=cities, flights_to=flights_to, error=error)
     if request.method == 'POST':
-        print(request.form)
+        airline = get_staff_airline(session.get('username'))
+        airports = get_airports()
+        cities = get_airport_cities()
         update_status = change_flight_status(request.form)
+        flights_to = view_all_flights_staff(request.form, airline)
         if update_status[0]:
-            return render_template('view_flight_staff.html', session=session, update_success=update_status[1])
+            return render_template('view_flight_staff.html', session=session, update_success=update_status[1], flights_to=flights_to,
+                                   airline=airline, airports=airports, cities=cities)
         else:
-            return render_template('view_flight_staff.html', session=session, update_error="There's a problem with changing flight status")
+            return render_template('view_flight_staff.html', session=session, update_error="There's a problem with changing flight status",
+                                   flights_to=flights_to, airline=airline, airports=airports, cities=cities)
 
 
 @app.route('/view_flight_staff/flight_insights/<airline>/<flight_num>/<departure_time>', methods=['GET'])
@@ -243,55 +251,83 @@ def view_reports():
             error = "Only an airline staff can access this page"
             return render_template('base.html', session=session, error=error)
         airline = get_staff_airline(session.get('username'))
-        monthly_ticket_sold, month = annual_ticket_sold(airline)
-        print(month)
-        monthly_revenue = annual_revenue(airline)
         most_freq_email, most_freq_name = view_freq_customer(airline)
         if request.args.get('sold_from_date'):
-            total_tickets = view_report(request.args, airline)
+            total_tickets, year_month = tickets_sold(request.args, airline)
+            to_iter = len(year_month)
             return render_template('view_reports.html', session=session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name,
-                                   airline=airline, total_tickets=total_tickets['total_tickets_sold'], monthly_ticket_sold=monthly_ticket_sold, monthly_revenue=monthly_revenue, month=month)
+                                   airline=airline, total_tickets=total_tickets, year_month=year_month, to_iter=to_iter)
         elif request.args.get('revenue_from_date'):
-            total_revenue = view_revenue(request.args, airline)
+            total_revenue, year_month = revenue(request.args, airline)
+            to_iter = len(year_month)
             return render_template('view_reports.html', session=session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name,
-                                   airline=airline, total_revenue=total_revenue['total_revenue'], monthly_ticket_sold=monthly_ticket_sold, month=month, monthly_revenue=monthly_revenue)
+                                   airline=airline, total_revenue=total_revenue, year_month=year_month, to_iter=to_iter)
         return render_template('view_reports.html', session=session, most_freq_email=most_freq_email['customer_email'], most_freq_name=most_freq_name,
-                               airline=airline, monthly_ticket_sold=monthly_ticket_sold, month=month, monthly_revenue=monthly_revenue)
+                               airline=airline)
 
 
-def annual_ticket_sold(airline):
-    date_last_year = datetime.today() - relativedelta(months=12)
+def tickets_sold(data, airline):
+    from_date = data.get('sold_from_date')
+    to_date = data.get('sold_to_date')
+    from_date_lst = from_date.split('-')
+    to_date_lst = to_date.split('-')
+    date_dif = (int(to_date_lst[0])-int(from_date_lst[0]),
+                int(to_date_lst[1])-int(from_date_lst[1]))
+    month_iter = date_dif[0]*12 + date_dif[1]
     date_res = []
     res = []
-    for i in range(12):
-        date_next_month = date_last_year + relativedelta(months=1)
-        from_date = date_last_year.strftime('%Y-%m-%d')
-        date_res.append(date_last_year.strftime('%Y-%m'))
-        to_date = date_next_month.strftime('%Y-%m-%d')
-        args = {'sold_from_date': from_date, 'sold_to_date': to_date}
-        total_tickets = view_report(args, airline)
-        res.append(total_tickets['total_tickets_sold'])
-        date_last_year = date_next_month
+    if month_iter > 0:
+        for i in range(month_iter+1):
+            date_res.append(from_date)
+            datetime_object = datetime.strptime(from_date, '%Y-%m')
+            date_next_month = datetime_object + relativedelta(months=1)
+            sql_from = datetime_object.strftime('%Y-%m-%d %H:%M:%S')
+            sql_to = date_next_month.strftime('%Y-%m-%d %H:%M:%S')
+            res.append(view_tickets_sold(sql_from, sql_to, airline))
+            from_date = date_next_month.strftime('%Y-%m')
+    else:
+        date_res.append(from_date)
+        datetime_object = datetime.strptime(from_date, '%Y-%m')
+        date_next_month = datetime_object + relativedelta(months=1)
+        sql_from = datetime_object.strftime('%Y-%m-%d %H:%M:%S')
+        sql_to = date_next_month.strftime('%Y-%m-%d %H:%M:%S')
+        res.append(view_tickets_sold(sql_from, sql_to, airline))
+        from_date = date_next_month.strftime('%Y-%m')
     res.append(sum(res))
+
     return res, date_res
 
 
-def annual_revenue(airline):
-    date_last_year = datetime.today() - relativedelta(months=12)
+def revenue(data, airline):
+    from_date = data.get('revenue_from_date')
+    to_date = data.get('revenue_to_date')
+    from_date_lst = from_date.split('-')
+    to_date_lst = to_date.split('-')
+    date_dif = (int(to_date_lst[0])-int(from_date_lst[0]),
+                int(to_date_lst[1])-int(from_date_lst[1]))
+    month_iter = date_dif[0]*12 + date_dif[1]
+    date_res = []
     res = []
-    for i in range(12):
-        date_next_month = date_last_year + relativedelta(months=1)
-        from_date = date_last_year.strftime('%Y-%m-%d')
-        to_date = date_next_month.strftime('%Y-%m-%d')
-        args = {'revenue_from_date': from_date, 'revenue_to_date': to_date}
-        total_revenue = view_revenue(args, airline)
-        if total_revenue['total_revenue'] != None:
-            res.append(total_revenue['total_revenue'])
-        else:
-            res.append(0)
-        date_last_year = date_next_month
+    if month_iter > 0:
+        for i in range(month_iter+1):
+            date_res.append(from_date)
+            datetime_object = datetime.strptime(from_date, '%Y-%m')
+            date_next_month = datetime_object + relativedelta(months=1)
+            sql_from = datetime_object.strftime('%Y-%m-%d %H:%M:%S')
+            sql_to = date_next_month.strftime('%Y-%m-%d %H:%M:%S')
+            res.append(view_revenue(sql_from, sql_to, airline))
+            from_date = date_next_month.strftime('%Y-%m')
+    else:
+        date_res.append(from_date)
+        datetime_object = datetime.strptime(from_date, '%Y-%m')
+        date_next_month = datetime_object + relativedelta(months=1)
+        sql_from = datetime_object.strftime('%Y-%m-%d %H:%M:%S')
+        sql_to = date_next_month.strftime('%Y-%m-%d %H:%M:%S')
+        res.append(view_revenue(sql_from, sql_to, airline))
+        from_date = date_next_month.strftime('%Y-%m')
     res.append(sum(res))
-    return res
+
+    return res, date_res
 
 
 @app.route('/view_reports/freq_customer_flights/<most_freq_email>', methods=['GET'])
@@ -300,8 +336,9 @@ def freq_customer_flights(most_freq_email):
         if session.get('user_type') != 'airlinestaff':
             error = "Only an airline staff can access this page"
             return render_template('base.html', session=session, error=error)
-        all_flights = all_customer_flights(most_freq_email)
-    return render_template('freq_customer_flights.html', session=session, all_flights=all_flights)
+        airline = get_staff_airline(session.get('username'))
+        all_flights = all_customer_flights(most_freq_email, airline)
+    return render_template('freq_customer_flights.html', session=session, all_flights=all_flights, airline=airline)
 
 
 @app.route('/update_system', methods=['GET', 'POST'])

@@ -182,7 +182,7 @@ def get_filtered_flights(email, args):
 
     if email:
         condition_list.append('Tickets.customer_email = %s')
-        inputs += (email,)
+    inputs += (email,)
     if args.get('start_date'):
         condition_list.append('Date(Tickets.departure_time) >= %s')
         inputs += (args.get('start_date'),)
@@ -231,8 +231,8 @@ def get_airport_cities():
 def filter_future_flights(args):
     inputs = ()
     sql = """SELECT flights.flight_num, departure_airport, arrival_airport, departure_time, base_price, flights.airline, 
-            num_seats - (SELECT COUNT(*) FROM tickets GROUP BY tickets.flight_num, tickets.departure_time, tickets.airline 
-                         HAVING tickets.flight_num = flights.flight_num AND tickets.departure_time = flights.departure_time AND tickets.airline = flights.airline) AS seats_left
+            num_seats - (SELECT COUNT(*) FROM tickets WHERE tickets.flight_num = flights.flight_num AND tickets.departure_time = flights.departure_time AND tickets.airline = flights.airline) 
+            AS seats_left
             FROM Flights 
             LEFT JOIN Airplanes 
 	        ON Flights.airplane_id = Airplanes.id"""
@@ -310,32 +310,32 @@ def view_all_flights_staff(args, airline):
     sql = "SELECT * FROM Flights WHERE airline = %s "
     condition_list = []
     if args.get('departure'):
-        condition_list.append("departure_airport = %s")
+        condition_list.append("flights.departure_airport = %s")
         inputs += (args.get('departure'),)
     if args.get('arrival'):
-        condition_list.append("arrival_airport = %s")
+        condition_list.append("flights.arrival_airport = %s")
         inputs += (args.get('arrival'),)
     if args.get('departure_city'):
-        condition_list.append(
-            "departure_airport IN (SELECT name FROM airports WHERE city = %s)")
+        condition_list.append("flights.departure_airport IN (SELECT departure_airport FROM Flights \
+        INNER JOIN airports ON Flights.departure_airport = airports.name WHERE airports.city = %s)")
         inputs += (args.get('departure_city'),)
     if args.get('arrival_city'):
-        condition_list.append(
-            "arrival_airport IN (SELECT name FROM airports WHERE city = %s)")
+        condition_list.append("flights.arrival_airport IN (SELECT arrival_airport FROM Flights \
+        INNER JOIN airports ON Flights.arrival_airport = airports.name WHERE airports.city = %s)")
         inputs += (args.get('arrival_city'),)
     if args.get('from_date'):
-        condition_list.append("DATE(departure_time) > %s")
+        condition_list.append("DATE(flights.departure_time) > %s")
         inputs += (args.get('from_date'),)
     if args.get('to_date'):
-        condition_list.append("DATE(departure_time) < %s")
+        condition_list.append("DATE(flights.departure_time) < %s")
         inputs += (args.get('to_date'),)
     if args.get('flight_num'):
-        condition_list.append("flight_num = %s")
+        condition_list.append("flights.flight_num = %s")
         inputs += (args.get('flight_num'),)
     if not condition_list:
-        condition_list.append("DATE(departure_time) > CURDATE()")
+        condition_list.append("DATE(flights.departure_time) > CURDATE()")
         condition_list.append(
-            "DATE(departure_time) < (CURDATE() + INTERVAL 30 DAY)")
+            "DATE(flights.departure_time) < (CURDATE() + INTERVAL 30 DAY)")
     sql += " AND " + " AND ".join(condition_list)
     print(sql)
     cursor.execute(sql, inputs)
@@ -393,32 +393,33 @@ def view_freq_customer(airline):
     cursor.execute(query, email['customer_email'])
     name = cursor.fetchone()
     return email, name['name']
-    return
 
 
-def view_report(data, airline):
-    from_date = data.get('sold_from_date')
-    to_date = data.get('sold_to_date')
+def view_tickets_sold(from_time, to_time, airline):
     query = """Select count(id) AS total_tickets_sold FROM tickets WHERE airline = %s
-            AND DATE(departure_time) > %s AND DATE(departure_time) < %s"""
-    cursor.execute(query, (airline, from_date, to_date))
+            AND departure_time >= %s AND departure_time < %s"""
+    cursor.execute(query, (airline, from_time, to_time))
     data = cursor.fetchone()
-    return data
+    return data['total_tickets_sold']
 
 
-def view_revenue(data, airline):
-    from_date = data.get('revenue_from_date')
-    to_date = data.get('revenue_to_date')
+def view_revenue(from_time, to_time, airline):
     query = """SELECT SUM(sold_price) as total_revenue FROM tickets WHERE airline = %s
-            AND DATE(departure_time) > %s AND DATE(departure_time) < %s"""
-    cursor.execute(query, (airline, from_date, to_date))
+            AND departure_time > %s AND departure_time < %s"""
+    cursor.execute(query, (airline, from_time, to_time))
     data = cursor.fetchone()
-    return data
+    res = data['total_revenue']
+    if res == None:
+        res = 0
+    return res
 
 
-def all_customer_flights(email):
-    query = 'SELECT * FROM customers WHERE email = %s'
-    cursor.execute(query, email)
+def all_customer_flights(email, airline):
+    query = """SELECT flights.flight_num, flights.departure_time FROM flights 
+    INNER JOIN tickets ON flights.flight_num = tickets.flight_num AND flights.departure_time = tickets.departure_time AND flights.airline = tickets.airline
+    INNER JOIN customers ON customers.email = tickets.customer_email 
+    WHERE customers.email = %s AND flights.airline = %s"""
+    cursor.execute(query, (email, airline))
     data = cursor.fetchall()
     return data
 
