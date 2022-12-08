@@ -1,8 +1,10 @@
 {% extends 'base.html' %} 
-
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/flight_search.css')}}"/>
+{% endblock %} 
 {% block body %}
     <h3>Most frequent customer within the last year</h3> 
-    <table>
+    <table class="center">
         <tr>
           <th>Customer Name</th>
           <th>Customer Email</th>
@@ -16,73 +18,70 @@
       </table>
 
       <h3>Tickets sold report</h3>
-      <h4>Tickets sold within last 12 months</h4> 
-      <table>
-          <tr>
-            <th>Month</th>
-            <th>Tickets sold</th>
-          </tr>
-          {% for i in range(12) %}
-          <tr>
-            
-              <td>{{month[i]}}</td>
-              <td>{{monthly_ticket_sold[i]}}</td>    
-                   
-          </tr>
-          {% endfor %}
-          <td>Total tickets: </td> 
-              <td>{{monthly_ticket_sold[12]}}</td>
-        </table>
       <form action="{{ url_for('view_reports') }}" method="GET">
         <div id="filter_bar">
         <div class="filter_item">
-            <label for="sold_from_date">Number of tickets sold from</label><br />
-            <input type="date" name="sold_from_date" id="sold_from_date" />
+            <label for="sold_from_date">Number of tickets sold from month</label><br />
+            <input type="month" name="sold_from_date" id="sold_from_date" required="true"/>
           </div>
           <div>
-            <label for="sold_to_date">Number of tickets sold to</label><br />
-            <input type="date" name="sold_to_date" id="sold_to_date" />
+            <label for="sold_to_date">Number of tickets sold to month</label><br />
+            <input type="month" name="sold_to_date" id="sold_to_date" required="true"/>
           </div>
         </div>
         <input type="submit" value="See Report" />
         </form>
       {% if total_tickets %}
-      <p>The total tickets sold within date range is: {{total_tickets}}</p>
-      {% endif %}
-
-      <h3>Tickets revenue report</h3> 
-    </table>
-    <h4>Revenue within last 12 months</h4> 
-    <table>
+      <table class="center">
         <tr>
           <th>Month</th>
-          <th>Monthly revenue</th>
+          <th>Tickets sold</th>
         </tr>
-        {% for i in range(12) %}
+        {% for i in range(to_iter) %}
         <tr>
-          
-            <td>{{month[i]}}</td>
-            <td>{{monthly_revenue[i]}}</td>    
-                 
+          <td>{{year_month[i]}}</td>
+          <td>{{total_tickets[i]}}</td>
         </tr>
         {% endfor %}
-        <td>Total tickets: </td> 
-            <td>{{monthly_revenue[12]}}</td>
+        <tr>
+          <th>Total: </th>
+          <th>{{total_tickets[to_iter]}}</th>
+        </tr>
       </table>
-      <form action="{{ url_for('view_reports') }}" method="GET" >
+      {% endif %}
+
+      <h3>Revenue report</h3>
+      <form action="{{ url_for('view_reports') }}" method="GET">
         <div id="filter_bar">
         <div class="filter_item">
-            <label for="revenue_from_date">Revenue from</label><br />
-            <input type="date" name="revenue_from_date" id="revenue_from_date" />
+            <label for="revenue_from_date">Revenue from month</label><br />
+            <input type="month" name="revenue_from_date" id="revenue_from_date" required="true"/>
           </div>
           <div>
-            <label for="revenue_to_date">Revenue to</label><br />
-            <input type="date" name="revenue_to_date" id="revenue_to_date" />
+            <label for="revenue_to_date">Revenue to month</label><br />
+            <input type="month" name="revenue_to_date" id="revenue_to_date" required="true"/>
           </div>
         </div>
         <input type="submit" value="See Report" />
         </form>
+
         {% if total_revenue %}
-        <p>The total revenue within date range is: {{total_revenue}}</p>
+        <table class="center">
+          <tr>
+            <th>Month</th>
+            <th>Monthly revenue</th>
+          </tr>
+          {% for i in range(to_iter) %}
+          <tr>
+            <td>{{year_month[i]}}</td>
+            <td>{{total_revenue[i]}}</td>
+          </tr>
+          {% endfor %}
+          <tr>
+            <th>Total: </th>
+            <th>{{total_revenue[to_iter]}}</th>
+          </tr>
+        </table>
         {% endif %}
+
 {% endblock %}
