@@ -62,7 +62,7 @@ def check_register_customer(data):
         conn.commit()
         return True
     except pymysql.err.IntegrityError as e:
-        print('Error: ', e)
+        # print('Error: ', e)
         return False
 
 
@@ -79,7 +79,7 @@ def check_register_airlinestaff(data):
                        password, date_of_birth, airline_name))
         conn.commit()
     except pymysql.err.IntegrityError as e:
-        print('Error: ', e)
+        # print('Error: ', e)
         return False
     # insert phone numbers
     phone = data.get('phone')
@@ -94,7 +94,7 @@ def check_register_airlinestaff(data):
         conn.commit()
         return True
     except pymysql.err.IntegrityError as e:
-        print('Error: ', e)
+        # print('Error: ', e)
         return False
 
 
@@ -126,19 +126,19 @@ def make_review(rating, comment, email, flight_num):
         conn.commit()
         return True
     except pymysql.err.IntegrityError as e:
-        print('Error: ', e)
+        # print('Error: ', e)
         return False
 
 
-def cancel_flight(id):
-    query = "DELETE FROM TICKETS WHERE id = %s"
+def cancel_flight(id, departure_time, airline):
+    query = "DELETE FROM TICKETS WHERE id = %s AND departure_time = %s AND airline = %s"
     try:
-        cursor.execute(query, id)
+        cursor.execute(query, (id, departure_time, airline))
         conn.commit()
         # print('number of rows deleted', cursor.rowcount, id)
         return True
     except pymysql.err.IntegrityError as e:
-        print('Error: ', e)
+        # print('Error: ', e)
         return False
 
 
@@ -158,8 +158,8 @@ def get_spending(email, args):
         inputs += (args.get('end_date'),)
     query += " WHERE " + " AND ".join(condition_list)
     query += "GROUP by f.departure_time"
-    print(args)
-    print(query)
+    # print(args)
+    # print(query)
     cursor.execute(query, inputs)
     data = cursor.fetchall()
     return data
@@ -198,19 +198,11 @@ def get_filtered_flights(email, args):
     # print("the args",args)
     if condition_list:
         query += " WHERE " + " AND ".join(condition_list)
-    print(query)
+    # print(query)
     cursor.execute(query, inputs)
     data = cursor.fetchall()
-    print(args)
+    # print(args)
     return data
-
-
-def staff_default_view_flights():
-    pass
-
-
-def staff_filtered_view_flights(date_range, sorc, dest):
-    pass
 
 
 def get_airports():
@@ -224,7 +216,7 @@ def get_airport_cities():
     query = 'SELECT DISTINCT city FROM airports'
     cursor.execute(query)
     data = cursor.fetchall()
-    print(data)
+    # print(data)
     return data
 
 
@@ -260,7 +252,7 @@ def filter_future_flights(args):
     data = cursor.fetchall()
     # for each in data:
     #     each['departure_time'] = each['departure_time'].strftime("%m/%d/%Y %I:%M %p")
-    print(data)
+    # print(data)
     return data
 
 
@@ -337,7 +329,7 @@ def view_all_flights_staff(args, airline):
         condition_list.append(
             "DATE(flights.departure_time) < (CURDATE() + INTERVAL 30 DAY)")
     sql += " AND " + " AND ".join(condition_list)
-    print(sql)
+    # print(sql)
     cursor.execute(sql, inputs)
     data = cursor.fetchall()
     return data
@@ -438,7 +430,7 @@ def create_new_flights(data, airline):
                        arrival_airport, departure_time, arrival_time, airline))
         conn.commit()
     except pymysql.err.IntegrityError as e:
-        print('Error: ', e)
+        # print('Error: ', e)
         return False
     return True, "Sucessfully added flight."
 
@@ -453,7 +445,7 @@ def add_airplane(data, airline):
         cursor.execute(query, (num_seats, manufacturing_company, age, airline))
         conn.commit()
     except pymysql.err.IntegrityError as e:
-        print('Error: ', e)
+        # print('Error: ', e)
         return False
     return True, "Sucessfully added plane."
 
@@ -475,7 +467,7 @@ def add_airport(data):
         cursor.execute(query, (name, city, country, type))
         conn.commit()
     except pymysql.err.IntegrityError as e:
-        print('Error: ', e)
+        # print('Error: ', e)
         return False
     return True, "Sucessfully added airport."
 
@@ -490,7 +482,7 @@ def change_flight_status(data):
         cursor.execute(query, (status, airline, flight_num, departure_time))
         conn.commit()
     except pymysql.err.IntegrityError as e:
-        print('Error: ', e)
+        # print('Error: ', e)
         return False
     return True, "Sucessfully updated status"
 
@@ -507,7 +499,7 @@ def book_flight_ticket(email, flight_num, departure_time, airline, form):
     cursor.execute(query, (flight_num, departure_time, airline,
                    flight_num, departure_time, airline))
     data = cursor.fetchone()
-    print(data)
+    # print(data)
     sold_price = data.get('base_price')
     is_seating = data.get('is_seating')
     if not is_seating:
