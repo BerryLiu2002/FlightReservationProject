@@ -60,6 +60,12 @@
       <td>
         <button type="submit">Cancel Flight</button>
         <input type="hidden" name="id" value="{{flight['id']}}" />
+        <input
+          type="hidden"
+          name="departure_time"
+          value="{{flight['departure_time']}}"
+        />
+        <input type="hidden" name="airline" value="{{flight['airline']}}" />
       </td>
     </tr>
     {% endfor %}

@@ -121,9 +121,11 @@ def cancel_trip():
         error = "Only customers can access this page"
         return render_template('base.html', session=session, error=error)
     id = request.form.get('id')
-    if cancel_flight(id):
-        data = get_past_flights(session.get('username'))
-        print(data)
+    departure_time = request.form.get('departure_time')
+    airline = request.form.get('airline')
+    if cancel_flight(id, departure_time, airline):
+        # data = get_past_flights(session.get('username'))
+        # print(data)
         return redirect('/purchased')
 
 
@@ -148,7 +150,7 @@ def form(flight_num):
         rating = request.form.get('stars')
         comment = request.form.get('comment')
         email = session.get('username')
-        print(rating, comment, email, flight_num)
+        # print(rating, comment, email, flight_num)
         if make_review(rating, comment, email, flight_num):
             success = "You have successfully submitted"
             return render_template('rating-form.html', session=session, success=success, data=flight_num)
@@ -167,7 +169,7 @@ def future_flights():
         # if return date is specified swap origin and destination, change departure date and run query again
         if request.args.get('return_date'):
             ret_args = request.args.to_dict()
-            print(ret_args)
+            # print(ret_args)
             ret_args['departure_date'] = ret_args['return_date']
             if ret_args.get('arrival') and ret_args.get('departure'):
                 ret_args['arrival'], ret_args['departure'] = ret_args['departure'], ret_args['arrival']
@@ -176,7 +178,7 @@ def future_flights():
         flights_back = filter_future_flights(
             ret_args) if request.args.get('return_date') else []
         error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
-        print(f"flights to: {flights_to}, flights back: {flights_back}")
+        # print(f"flights to: {flights_to}, flights back: {flights_back}")
         return render_template('future_flights.html', session=session, airports=airports, cities=cities, flights_to=flights_to, flights_back=flights_back, error=error)
 
 
@@ -199,7 +201,7 @@ def flight_status():
 def flight_details(airline, flight_num, departure_time):
     if request.method == 'GET':
         flight = get_flight_details(airline, flight_num, departure_time)
-        print(flight)
+        # print(flight)
         return render_template('flight_details.html', session=session, flight=flight)
 
 
@@ -211,7 +213,7 @@ def book_flight(flight_num, departure_time, airline):
     if request.method == 'POST':
         if not session.get('username', None):
             return render_template('book_flight.html', session=session, flight=flight, flight_num=flight_num, departure_time=departure_time, airline=airline, error="You must be logged in as a customer to book a flight")
-        print(request.form)
+        # print(request.form)
         success, message = book_flight_ticket(session.get(
             'username'), flight_num, departure_time, airline, request.form)
         if success:
