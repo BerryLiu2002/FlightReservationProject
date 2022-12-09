@@ -71,6 +71,7 @@
 <h3>Departure Flights</h3>
 <table>
   <tr>
+    <th>Flight Number</th>
     <th>Departure Airport</th>
     <th>Arrival Airport</th>
     <th>Departure Time</th>
@@ -81,6 +82,7 @@
   </tr>
   {% for flight in flights_to %}
   <tr>
+    <td>{{flight.flight_num}}</td>
     <td>{{flight.departure_airport}}</td>
     <td>{{flight.arrival_airport}}</td>
     <td>{{flight.departure_time}}</td>
@@ -103,6 +105,7 @@
 <h3>Return Flights</h3>
 <table>
   <tr>
+    <th>Flight Number</th>
     <th>Departure Airport</th>
     <th>Arrival Airport</th>
     <th>Departure Time</th>
@@ -113,6 +116,7 @@
   </tr>
   {% for flight in flights_back %}
   <tr>
+    <td>{{flight.flight_num}}</td>
     <td>{{flight.departure_airport}}</td>
     <td>{{flight.arrival_airport}}</td>
     <td>{{flight.departure_time}}</td>

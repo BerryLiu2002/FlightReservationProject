@@ -4,4 +4,11 @@ session.user_type == 'customer' %}
   <a href="{{ url_for('purchased_flights')}}">List out Purchased Flights</a>
 </li>
 <li><a href="{{url_for('spending')}}">Track my spending</a></li>
-{% elif session.user_type == 'airlinestaff' %} {% endif %} {% endblock %}
+
+{% elif session.user_type == 'airlinestaff' %} 
+<li>
+  <a href="{{url_for('view_flight_staff')}}"> Staff View Flight</a>
+</li>
+<li><a href="{{url_for('view_reports')}}"> View Reports</a></li>
+<li><a href="{{url_for('update_system')}}"> Update System</a></li>
+{% endif %} {% endblock %}
