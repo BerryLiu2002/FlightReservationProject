@@ -160,9 +160,6 @@ def form(flight_num):
 @app.route('/future_flights', methods=['GET'])
 def future_flights():
     if request.method == 'GET':
-        if session.get('user_type') != 'customer':
-            error = "Only customers can access this page"
-            return render_template('base.html', session=session, error=error)
         airports = get_airports()
         cities = get_airport_cities()
         flights_to = filter_future_flights(
@@ -234,8 +231,9 @@ def view_flight_staff():
         cities = get_airport_cities()
         flights_to = view_all_flights_staff(
             request.args, airline) if request.args else []
-        error = 'No flights found with your specifications' if 'departure_date' in request.args and not flights_to else None
+        error = 'No flights found with your specifications' if not flights_to else None
         return render_template('view_flight_staff.html', session=session, airline=airline, airports=airports, cities=cities, flights_to=flights_to, error=error)
+
     if request.method == 'POST':
         airline = get_staff_airline(session.get('username'))
         airports = get_airports()
@@ -363,14 +361,16 @@ def freq_customer_flights(most_freq_email):
 
 @app.route('/update_system', methods=['GET', 'POST'])
 def update_system():
-    airports = get_airports()
-    airline = get_staff_airline(session.get('username'))
     if request.method == 'GET':
         if session.get('user_type') != 'airlinestaff':
             error = "Only an airline staff can access this page"
             return render_template('base.html', session=session, error=error)
+        airports = get_airports()
+        airline = get_staff_airline(session.get('username'))
         return render_template('update_system.html', session=session, airports=airports, airline=airline)
     if request.method == 'POST':
+        airports = get_airports()
+        airline = get_staff_airline(session.get('username'))
         if len(request.form) == 7:
             status = create_new_flights(request.form, airline)
             if status[0]:
